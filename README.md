@@ -5,7 +5,7 @@
 
 A simple, installable web app for keeping an hour-by-hour **energy profile**: how much energy a person has through the day, and what they were doing at the time. It is meant to help people living with fatigue, and the professionals supporting them, see patterns such as when energy dips and which activities drain or restore it.
 
-The layout follows the  _energy profile_ worksheet used in fatigue management (after H. Lorenzen, 2010). Energy is recorded on a **color scale** instead of numbers from 1 to 10.
+The layout follows the _energy profile_ worksheet used in fatigue management (after H. Lorenzen, 2010). Energy is recorded on a **color scale** instead of numbers from 1 to 10.
 
 No account, no server, no tracking. All data stays on the device.
 
