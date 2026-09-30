@@ -5,7 +5,7 @@
 
 A simple, installable web app for keeping an hour-by-hour **energy profile**: how much energy a person has through the day, and what they were doing at the time. It is meant to help people living with fatigue, and the professionals supporting them, see patterns such as when energy dips and which activities drain or restore it.
 
-The layout follows the _energy profile_ worksheet used in fatigue management (after H. Lorenzen, 2010). Energy is recorded on a **color scale** instead of numbers from 1 to 10.
+The layout follows the paper _energy profile_ worksheet used in fatigue management (after H. Lorenzen, 2010). Energy is recorded on a **color scale** instead of numbers from 1 to 10, which many people find easier to fill in.
 
 No account, no server, no tracking. All data stays on the device.
 
@@ -14,12 +14,15 @@ No account, no server, no tracking. All data stays on the device.
 ## Features
 
 - **Paper-like daily form.** One column per hour, from 08:00 to 01:00 by default. Tap the height that matches your energy level, and the points are joined into a curve.
-- **Continuous color scale** from red (no energy) to green (full energy), shown beside the chart.
+- **Current hour highlighted.** On a phone, today's form opens scrolled to the hour you are in.
+- **Undo** after tapping or dragging on the chart, in case of a mis-tap.
+- **Continuous color scale** from red (no energy) to green (full energy), shown beside the chart. A **colour-blind friendly** scale (purple → yellow) and **larger text** are available in Settings.
 - **Optional legends.** Both are hidden by default:
   - a _numeric legend_ shows levels 1–10;
   - a _descriptive legend_ shows five words, each covering two levels. In English these are: exhausted (1–2), tired (3–4), okay (5–6), good (7–8), full of energy (9–10).
-- **Activities per hour.** Pick from a grouped dropdown or type freely. Several activities can be combined, for example `Breakfast + Caring for pets`. Activities you type yourself are offered in the dropdown next time.
-- **Daily notes** for sleep, symptoms or anything unusual.
+- **Activities per hour.** Tap one of your most frequent activities, pick from a grouped dropdown, or type freely. Several activities can be combined, for example `Breakfast + Caring for pets`. Activities you type yourself are offered in the dropdown next time.
+- **Daily notes** for sleep, symptoms or anything unusual. Notes and activities are saved while typing.
+- **Go to any day**: arrows for the previous and next day, or tap the date to pick one.
 - **Trends tab**
   - Energy map: a heatmap of days × hours over 7, 14 or 30 days.
   - Average energy per hour, compared with the selected day.
@@ -27,8 +30,8 @@ No account, no server, no tracking. All data stays on the device.
 - **Export and backup**
   - CSV export, semicolon-separated so it opens directly in Excel.
   - JSON backup and restore.
-- **Adjustable day**: set when the day starts and ends, including past midnight.
-- **Four languages**: Italiano, Français, Deutsch, English. The app follows the device language on first launch, falls back to English for any other language, and remembers the choice made in the language picker.
+- **Settings menu** (gear button): language, when the day starts and ends (including past midnight), export, backup, restore and delete. Hours after midnight belong to the previous diary day.
+- **Four languages**: Italiano, Français, Deutsch, English. The app follows the device language on first launch, falls back to English for any other language, and remembers the choice made in Settings.
 - **Works offline and installs** to the home screen as a Progressive Web App.
 - **Light and dark mode** follow the system setting.
 - **Keyboard accessible**: on the chart, the up and down arrows change the level, Delete clears it, and Enter opens the activity panel.
@@ -44,7 +47,8 @@ On first launch the app shows a week of clearly marked **sample data**. Tapping 
 - Because the data lives in one browser on one device:
   - clearing browser data or using a private window will lose it;
   - on iPhone, the home-screen app and Safari keep **separate** storage, so always open the app from the same place;
-  - use **Save backup** regularly, and **Restore backup** to move the diary to another device.
+  - use **Save backup** in Settings regularly, and **Restore backup** to move the diary to another device. The app reminds you when the last backup is more than 14 days old.
+- The app asks the browser to keep its storage persistent, which protects the diary from being cleared automatically when the device runs low on space.
 
 The only external requests are for the Google Fonts stylesheet and font files. If the fonts cannot load, the app falls back to system fonts.
 
@@ -115,7 +119,7 @@ public/                      Everything that gets deployed
     ├── storage.js           localStorage access (storage injected for tests)
     ├── files.js             File download and upload
     ├── i18n/                One file per language + language detection
-    └── ui/                  Rendering: day view, activity sheet, trends view, legend
+    └── ui/                  Rendering: day view, activity sheet, settings, trends view, legend
 tests/                       Unit tests (node:test), no browser needed
 scripts/serve.mjs            Zero-dependency development server
 .github/                     CI, Pages deployment, Dependabot
@@ -138,7 +142,7 @@ scripts/serve.mjs            Zero-dependency development server
   - the sample data (`demoPlan`).
 - **Adding a language:** copy `en.js`, translate it, then register it in `i18n/index.js` (`TRANSLATIONS` and `LANGUAGE_NAMES`) and in `PRECACHE` in `sw.js`.
 - **Adding a file under `public/`:** also add it to `PRECACHE` in `public/sw.js`. A test checks this.
-- **Default hours:** change `DEFAULT_SETTINGS` in `config.js` (`start: 8, end: 24`). `end` is the start hour of the last slot, so `24` means 00:00–01:00.
+- **Default hours** for new diaries: change `DEFAULT_SETTINGS` in `config.js` (`start: 8, end: 24`). `end` is the start hour of the last slot, so `24` means 00:00–01:00.
 - **Colors:** the ten scale colors are the `--e1` … `--e10` CSS variables in `styles.css`. They are sampled along one gradient so that the scale blends smoothly.
 
 ### Releasing
@@ -193,7 +197,7 @@ This app is a self-observation aid. It is not a medical device and does not give
 
 ## License
 
-Copyright (C) 2026 vblncs
+Copyright (C) 2026 Virginie
 
 This program is free software: you can redistribute it and/or modify it under the terms of the **GNU Affero General Public License** as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

@@ -21,3 +21,11 @@ export const DEFAULT_RANGE = 14;
 
 /** Separator used when several activities are combined in one hour. */
 export const ACTIVITY_SEPARATOR = " + ";
+
+/** localStorage key for display preferences and backup bookkeeping (not part of the diary backup). */
+export const PREFS_STORAGE_KEY = "profiloEnergetico.prefs";
+
+/** Remind to make a backup when the last one is older than this (or there is none). */
+export const BACKUP_REMINDER_DAYS = 14;
+/** "Later" hides the reminder for this long. */
+export const BACKUP_SNOOZE_DAYS = 7;

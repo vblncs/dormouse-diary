@@ -10,8 +10,8 @@ export const LEVELS = Object.freeze(
     return Object.freeze({
       value,
       color: `var(--e${value})`,
-      // dark text on the light middle of the scale, white on the dark ends
-      textColor: value <= 3 || value >= 10 ? "#fff" : "#1b1b1b",
+      // readable text on top of this colour (defined per palette in styles.css)
+      textColor: `var(--e${value}-fg)`,
     });
   }),
 );

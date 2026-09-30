@@ -6,6 +6,7 @@ import { getDay, slotHours } from "../diary.js";
 import { dayRange, hourLabel } from "../dates.js";
 import { LEVELS, levelFor } from "../scale.js";
 import { escapeHtml, qs, qsa } from "./dom.js";
+import { openSettings } from "./settings-sheet.js";
 import { bindLegendToggles, horizontalScaleMarkup, legendTogglesMarkup } from "./legend.js";
 
 function heatmapMarkup(app, keys, hours, averages) {
@@ -31,7 +32,7 @@ function heatmapMarkup(app, keys, hours, averages) {
         })
         .join("");
       const average = mean(levels);
-      return `<tr><th class="d" data-day="${key}">${escapeHtml(app.formatShortDate(key))}</th>${cells}<td ${cellStyle(average)}>${cellText(average, true)}</td></tr>`;
+      return `<tr><th class="d" scope="row"><button type="button" class="daylink" data-day="${key}">${escapeHtml(app.formatShortDate(key))}</button></th>${cells}<td ${cellStyle(average)}>${cellText(average, true)}</td></tr>`;
     })
     .join("");
 
@@ -133,32 +134,6 @@ function activitiesMarkup(app, keys) {
     <p class="small-print">${escapeHtml(t.actNote)}</p>`;
 }
 
-function dataMarkup(app) {
-  const { t } = app;
-  const { start, end } = app.diary.settings;
-  const startOptions = Array.from(
-    { length: 24 },
-    (_, h) => `<option value="${h}" ${h === start ? "selected" : ""}>${hourLabel(h)}</option>`,
-  ).join("");
-  const endOptions = Array.from({ length: 24 }, (_, i) => {
-    const value = start + 1 + i;
-    return `<option value="${value}" ${value === end + 1 ? "selected" : ""}>${hourLabel(value)}${value >= 24 ? " " + escapeHtml(t.nextDayShort) : ""}</option>`;
-  }).join("");
-  return `
-    <p class="sub">${escapeHtml(t.dataSub)}</p>
-    <div class="tools">
-      <button class="btn primary" id="export-csv">${escapeHtml(t.expCsv)}</button>
-      <button class="btn" id="export-backup">${escapeHtml(t.saveBackup)}</button>
-      <label class="btn" for="import-backup">${escapeHtml(t.restore)}</label>
-      <input type="file" id="import-backup" accept=".json,application/json" hidden>
-    </div>
-    <div class="settings">
-      <label>${escapeHtml(t.dayStart)}<select id="day-start">${startOptions}</select></label>
-      <label>${escapeHtml(t.dayEnd)}<select id="day-end">${endOptions}</select></label>
-    </div>
-    <div id="wipe-zone" class="wipe"><button class="btn small" id="wipe">${escapeHtml(t.wipe)}</button></div>`;
-}
-
 export function renderTrendsView(app, container) {
   const { t } = app;
   const hours = slotHours(app.diary.settings);
@@ -185,13 +160,17 @@ export function renderTrendsView(app, container) {
     </div>
     <div class="card">
       <h2>${escapeHtml(t.dataTitle)}</h2>
-      ${dataMarkup(app)}
+      <p class="sub">${escapeHtml(t.shareHint)}</p>
+      <div class="tools">
+        <button class="btn primary" id="export-csv">${escapeHtml(t.expCsv)}</button>
+        <button class="btn" id="more-settings">${escapeHtml(t.settings)}…</button>
+      </div>
     </div>`;
 
   qsa("[data-range]", container).forEach((b) =>
     b.addEventListener("click", () => app.setRange(Number(b.dataset.range))),
   );
-  qsa("th[data-day]", container).forEach((th) =>
+  qsa("button[data-day]", container).forEach((th) =>
     th.addEventListener("click", () => {
       app.showDay(th.dataset.day, { render: false });
       app.setTab("day");
@@ -199,23 +178,5 @@ export function renderTrendsView(app, container) {
   );
   bindLegendToggles(app, "trends", container);
   qs("#export-csv", container).addEventListener("click", () => app.exportCsv());
-  qs("#export-backup", container).addEventListener("click", () => app.exportBackup());
-  qs("#import-backup", container).addEventListener(
-    "change",
-    (e) => e.target.files[0] && app.importBackup(e.target.files[0]),
-  );
-  const start = qs("#day-start", container);
-  const end = qs("#day-end", container);
-  start.addEventListener("change", () => {
-    const length = app.diary.settings.end - app.diary.settings.start + 1;
-    app.setDayWindow(Number(start.value), Number(start.value) + length);
-  });
-  end.addEventListener("change", () => app.setDayWindow(app.diary.settings.start, Number(end.value)));
-  qs("#wipe", container).addEventListener("click", () => {
-    const zone = qs("#wipe-zone", container);
-    zone.innerHTML = `<p>${escapeHtml(t.wipeQ)}</p>
-      <div class="tools"><button class="btn" id="wipe-cancel">${escapeHtml(t.cancel)}</button><button class="btn primary" id="wipe-confirm">${escapeHtml(t.wipeYes)}</button></div>`;
-    qs("#wipe-cancel", zone).addEventListener("click", () => app.render());
-    qs("#wipe-confirm", zone).addEventListener("click", () => app.deleteAll());
-  });
+  qs("#more-settings", container).addEventListener("click", () => openSettings(app));
 }

@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { activityStats, daySummary, filledDays, hourlyAverages, mean, trendOf } from "../public/js/analysis.js";
+import {
+  activityStats,
+  daySummary,
+  filledDays,
+  frequentActivities,
+  hourlyAverages,
+  mean,
+  trendOf,
+} from "../public/js/analysis.js";
 import { diaryToCsv } from "../public/js/csv.js";
 import { createEmptyDiary, setActivity, setEnergy, setNote } from "../public/js/diary.js";
 import { TRANSLATIONS } from "../public/js/i18n/index.js";
@@ -90,5 +98,20 @@ describe("diaryToCsv", () => {
     assert.ok(lines.includes('2026-09-30;00:00-01:00;;"Sleeping"'), "hour 24 is written as 00:00");
     assert.equal(lines.at(-1), '2026-09-30;note;;"Said ""tired"""');
     assert.equal(lines.length, 1 + 6 + 1);
+  });
+});
+
+describe("frequentActivities", () => {
+  it("counts each part of combined activities, case-insensitively, most frequent first", () => {
+    const diary = createEmptyDiary();
+    setActivity(diary, D1, 8, "Breakfast + Cat");
+    setActivity(diary, D1, 9, "cat");
+    setActivity(diary, D2, 8, "Breakfast");
+    setActivity(diary, D2, 9, "Walk");
+    setActivity(diary, D2, 10, "Cat + Reading");
+    assert.deepEqual(frequentActivities(diary, 3), ["Cat", "Breakfast", "Reading"]);
+  });
+  it("is empty for an empty diary", () => {
+    assert.deepEqual(frequentActivities(createEmptyDiary()), []);
   });
 });

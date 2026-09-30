@@ -1,6 +1,6 @@
 {
   "name": "energy-profile-diary",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Hour-by-hour energy and activity diary for fatigue management, after H. Lorenzen's energy profile.",
   "private": true,
   "license": "AGPL-3.0-or-later",

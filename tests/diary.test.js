@@ -5,6 +5,7 @@ import {
   appendActivity,
   createEmptyDiary,
   createSampleDiary,
+  currentSlot,
   customActivities,
   getEntry,
   normalizeDiary,
@@ -134,5 +135,27 @@ describe("createSampleDiary", () => {
     const a = createSampleDiary(t, DAY);
     assert.deepEqual(a, createSampleDiary(t, DAY));
     assert.deepEqual(normalizeDiary(a), a);
+  });
+});
+
+describe("currentSlot", () => {
+  const settings = { start: 8, end: 24 }; // 08:00–01:00
+  const at = (iso) => new Date(iso); // local time
+
+  it("returns today's slot during the day", () => {
+    assert.deepEqual(currentSlot(settings, at("2026-09-30T15:20:00")), { dateKey: "2026-09-30", hour: 15 });
+  });
+  it("puts the hour after midnight on the previous diary day", () => {
+    assert.deepEqual(currentSlot(settings, at("2026-10-01T00:30:00")), { dateKey: "2026-09-30", hour: 24 });
+  });
+  it("returns no slot outside the diary hours", () => {
+    assert.deepEqual(currentSlot(settings, at("2026-10-01T03:00:00")), { dateKey: "2026-10-01", hour: null });
+    assert.deepEqual(currentSlot(settings, at("2026-10-01T07:59:00")), { dateKey: "2026-10-01", hour: null });
+  });
+  it("works for a day that ends before midnight", () => {
+    assert.deepEqual(currentSlot({ start: 6, end: 22 }, at("2026-10-01T00:30:00")), {
+      dateKey: "2026-10-01",
+      hour: null,
+    });
   });
 });

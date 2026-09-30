@@ -2,10 +2,11 @@
 
 import { DEFAULT_RANGE } from "./config.js";
 import { diaryToCsv } from "./csv.js";
-import { addDays, formatDecimal, formatLongDate, formatShortDate, todayKey } from "./dates.js";
+import { addDays, formatDecimal, formatLongDate, formatShortDate, toDateKey } from "./dates.js";
 import {
   createEmptyDiary,
   createSampleDiary,
+  currentSlot,
   normalizeDiary,
   setActivity,
   setDayWindow,
@@ -13,10 +14,21 @@ import {
   setNote,
 } from "./diary.js";
 import { readJsonFile, saveTextFile } from "./files.js";
-import { LANGUAGE_NAMES, LANGUAGES, detectLanguage, getTranslation } from "./i18n/index.js";
-import { clearDiary, loadDiary, loadLanguage, saveDiary, saveLanguage } from "./storage.js";
+import { detectLanguage, getTranslation } from "./i18n/index.js";
+import { shouldRemindBackup, snoozeUntil } from "./reminders.js";
+import {
+  clearDiary,
+  loadDiary,
+  loadLanguage,
+  loadPrefs,
+  requestPersistentStorage,
+  saveDiary,
+  saveLanguage,
+  savePrefs,
+} from "./storage.js";
 import { renderDayView } from "./ui/day-view.js";
-import { escapeHtml, qs, showToast } from "./ui/dom.js";
+import { qs, showToast } from "./ui/dom.js";
+import { openSettings } from "./ui/settings-sheet.js";
 import { renderTrendsView } from "./ui/trends-view.js";
 
 export class DiaryApp {
@@ -31,22 +43,33 @@ export class DiaryApp {
     this.now = now;
     this.lang = loadLanguage(storage) ?? detectLanguage(preferredLanguages);
     this.t = getTranslation(this.lang);
+    /** Display preferences and backup bookkeeping (kept outside the diary). */
+    this.prefs = loadPrefs(storage);
 
     const saved = loadDiary(storage);
     this.isSample = !saved;
-    this.diary = saved ?? createSampleDiary(this.t, this.todayKey());
+    this.diary = saved ?? createSampleDiary(this.t, toDateKey(now()));
     this.dayKey = this.isSample ? addDays(this.todayKey(), -1) : this.todayKey();
     this.tab = "day";
     this.range = DEFAULT_RANGE;
     /** Legends are a viewing aid: hidden on every visit, never saved. */
     this.legend = { numbers: false, words: false };
     this.saveFailed = false;
+    /** Copy of the diary taken before a chart gesture, so it can be undone. */
+    this.undoSnapshot = null;
+    this.persistenceRequested = false;
   }
 
   /* ---------- helpers for views ---------- */
 
+  /** The diary day we are in now (after midnight, still the previous day until the diary day ends). */
   todayKey() {
-    return todayKey(this.now());
+    return currentSlot(this.diary?.settings ?? { start: 0, end: 23 }, this.now()).dateKey;
+  }
+  /** The slot of "now" if the open day is today, else null. */
+  currentHour() {
+    const slot = currentSlot(this.diary.settings, this.now());
+    return slot.dateKey === this.dayKey ? slot.hour : null;
   }
   /** Last day shown on the trends tab (sample data ends yesterday). */
   rangeEndKey() {
@@ -61,20 +84,31 @@ export class DiaryApp {
   formatDecimal(value) {
     return formatDecimal(value, this.lang);
   }
-  notify(message) {
-    showToast(message);
+  formatDate(isoTimestamp) {
+    return new Intl.DateTimeFormat(this.lang, { day: "numeric", month: "long", year: "numeric" }).format(
+      new Date(isoTimestamp),
+    );
+  }
+  /** The diary has real entries (not the sample). */
+  hasData() {
+    return !this.isSample && Object.keys(this.diary.days).length > 0;
+  }
+  showBackupReminder() {
+    return shouldRemindBackup(
+      { hasData: this.hasData(), lastBackup: this.prefs.lastBackup, snoozedUntil: this.prefs.reminderSnoozedUntil },
+      this.now(),
+    );
+  }
+  notify(message, action) {
+    showToast(message, action);
   }
 
   /* ---------- lifecycle ---------- */
 
   start() {
-    const picker = qs("#language");
-    picker.innerHTML = LANGUAGES.map(
-      (code) => `<option value="${code}">${escapeHtml(LANGUAGE_NAMES[code])}</option>`,
-    ).join("");
-    picker.addEventListener("change", (e) => this.setLanguage(e.target.value));
     qs("#tab-day").addEventListener("click", () => this.setTab("day"));
     qs("#tab-trends").addEventListener("click", () => this.setTab("trends"));
+    qs("#open-settings").addEventListener("click", () => openSettings(this));
     qs("#start-diary").addEventListener("click", () => {
       this.leaveSample();
       this.render();
@@ -85,12 +119,15 @@ export class DiaryApp {
 
   render() {
     const { t } = this;
-    document.documentElement.lang = this.lang;
+    const root = document.documentElement;
+    root.lang = this.lang;
+    root.dataset.palette = this.prefs.palette;
+    root.dataset.textSize = this.prefs.textSize;
     document.title = t.docTitle;
     qs("#app-title").textContent = t.title;
     qs("#app-subtitle").textContent = t.sub;
-    qs("#language-label").textContent = t.language;
-    qs("#language").value = this.lang;
+    qs("#open-settings").setAttribute("aria-label", t.settings);
+    qs("#open-settings").title = t.settings;
     qs("#tab-day").textContent = t.tabDay;
     qs("#tab-trends").textContent = t.tabTrend;
     qs("#tab-day").setAttribute("aria-selected", String(this.tab === "day"));
@@ -132,11 +169,22 @@ export class DiaryApp {
     this.render();
   }
 
+  /** Changes display preferences or backup bookkeeping. */
+  setPrefs(changes, { render = true } = {}) {
+    Object.assign(this.prefs, changes);
+    savePrefs(this.storage, this.prefs);
+    if (render) this.render();
+  }
+
+  snoozeBackupReminder() {
+    this.setPrefs({ reminderSnoozedUntil: snoozeUntil(this.now()) });
+  }
+
   setLanguage(code) {
     this.lang = code;
     this.t = getTranslation(code);
     saveLanguage(this.storage, code);
-    if (this.isSample) this.diary = createSampleDiary(this.t, this.todayKey());
+    if (this.isSample) this.diary = createSampleDiary(this.t, toDateKey(this.now()));
     this.render();
   }
 
@@ -180,11 +228,38 @@ export class DiaryApp {
     return this.edit((diary) => setDayWindow(diary, start, endExclusive));
   }
 
+  /* ---------- undo (for taps and drags on the chart) ---------- */
+
+  /** Call before a chart gesture starts. */
+  beginUndoableChange() {
+    this.undoSnapshot = this.isSample ? null : structuredClone(this.diary);
+  }
+
+  /** Call when the gesture ends: offers "Undo" if something actually changed. */
+  offerUndo() {
+    const before = this.undoSnapshot;
+    this.undoSnapshot = null;
+    if (!before || JSON.stringify(before) === JSON.stringify(this.diary)) return;
+    this.notify(this.t.energyChanged, {
+      label: this.t.undo,
+      onClick: () => {
+        this.diary = before;
+        this.save();
+        this.render();
+        this.notify(this.t.undone);
+      },
+    });
+  }
+
   save() {
     if (this.isSample || !this.storage) return;
     const ok = saveDiary(this.storage, this.diary);
     if (!ok && !this.saveFailed) this.notify(this.t.storageFail);
     this.saveFailed = !ok;
+    if (ok && !this.persistenceRequested) {
+      this.persistenceRequested = true;
+      requestPersistentStorage();
+    }
   }
 
   deleteAll() {
@@ -203,7 +278,14 @@ export class DiaryApp {
   }
 
   async exportBackup() {
-    await this.offerFile(`${this.t.filePrefix}-backup-${this.todayKey()}.json`, JSON.stringify(this.diary, null, 1));
+    const result = await this.offerFile(
+      `${this.t.filePrefix}-backup-${this.todayKey()}.json`,
+      JSON.stringify(this.diary, null, 1),
+    );
+    if (result === "downloaded" || result === "saved") {
+      this.setPrefs({ lastBackup: this.now().toISOString(), reminderSnoozedUntil: null });
+    }
+    return result;
   }
 
   async offerFile(filename, content) {
@@ -216,16 +298,24 @@ export class DiaryApp {
       unavailable: this.t.noDownload,
     };
     if (messages[result]) this.notify(messages[result]);
+    return result;
   }
 
-  async importBackup(file) {
+  /** Reads and validates a backup file; null (with a message) if it is not a diary backup. */
+  async readBackup(file) {
     try {
-      this.diary = normalizeDiary(await readJsonFile(file));
+      return normalizeDiary(await readJsonFile(file));
     } catch {
       this.notify(this.t.badFile);
-      return;
+      return null;
     }
+  }
+
+  /** Replaces the diary with a backup read by readBackup(). */
+  applyBackup(diary) {
+    this.diary = diary;
     this.isSample = false;
+    this.dayKey = this.todayKey();
     this.save();
     this.notify(this.t.restored);
     this.render();

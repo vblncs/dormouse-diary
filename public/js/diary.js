@@ -5,7 +5,7 @@
 // Entry  = { e?: 1–10, n?: string }   (e = energy level, n = activity text)
 
 import { ACTIVITY_SEPARATOR, DEFAULT_SETTINGS, SCHEMA_VERSION } from "./config.js";
-import { addDays } from "./dates.js";
+import { addDays, toDateKey } from "./dates.js";
 import { clampLevel } from "./scale.js";
 
 /** Category ids used by the very first version, before activities became free text. */
@@ -134,6 +134,20 @@ export function setNote(diary, key, note) {
  */
 export function setDayWindow(diary, start, endExclusive) {
   diary.settings = sanitizeSettings({ start, end: endExclusive - 1 });
+}
+
+/**
+ * The diary day and slot that "now" belongs to. Slots after midnight belong to the previous
+ * diary day: with a day of 08:00–01:00, 00:30 on 1 Oct is slot 24 of 30 Sep.
+ * @param {{start:number,end:number}} settings
+ * @param {Date} now
+ * @returns {{ dateKey: string, hour: number | null }} hour is null outside the diary day
+ */
+export function currentSlot(settings, now) {
+  const today = toDateKey(now);
+  const hour = now.getHours();
+  if (hour + 24 <= settings.end && hour < settings.start) return { dateKey: addDays(today, -1), hour: hour + 24 };
+  return { dateKey: today, hour: hour >= settings.start && hour <= settings.end ? hour : null };
 }
 
 /** Appends an activity to existing text: "Breakfast" + "Reading" → "Breakfast + Reading". */
