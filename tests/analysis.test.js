@@ -83,7 +83,14 @@ describe("frequentActivities", () => {
     setActivity(diary, D2, 8, "Breakfast");
     setActivity(diary, D2, 9, "Walk");
     setActivity(diary, D2, 10, "Cat + Reading");
-    assert.deepEqual(frequentActivities(diary, 3), ["Cat", "Breakfast", "Reading"]);
+    assert.deepEqual(frequentActivities(diary, 3, 1), ["Cat", "Breakfast", "Reading"]);
+  });
+  it("leaves out activities recorded only once", () => {
+    const diary = createEmptyDiary();
+    setActivity(diary, D1, 8, "Breakfast + Cat");
+    setActivity(diary, D2, 8, "Breakfast");
+    setActivity(diary, D2, 9, "Walk");
+    assert.deepEqual(frequentActivities(diary), ["Breakfast"]);
   });
   it("is empty for an empty diary", () => {
     assert.deepEqual(frequentActivities(createEmptyDiary()), []);

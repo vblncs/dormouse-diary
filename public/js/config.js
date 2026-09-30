@@ -19,6 +19,11 @@ export const DEFAULT_SETTINGS = Object.freeze({ start: 8, end: 24 });
 export const RANGE_OPTIONS = Object.freeze([7, 14, 30]);
 export const DEFAULT_RANGE = 14;
 
+/** Quick-pick buttons in the activity panel: at most this many… */
+export const FREQUENT_MAX = 6;
+/** …of the activities recorded at least this many times (a one-off is not "frequent"). */
+export const FREQUENT_MIN_USES = 2;
+
 /** Separator used when several activities are combined in one hour. */
 export const ACTIVITY_SEPARATOR = " + ";
 

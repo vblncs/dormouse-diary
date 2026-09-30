@@ -157,7 +157,7 @@ export function appendActivity(text, activity) {
 }
 
 /**
- * Activities the person typed themselves (not in any built-in list), for the dropdown.
+ * Activities the person typed themselves (not in any built-in list), for the suggestions while typing.
  * @param {Iterable<string>} builtIn
  */
 export function customActivities(diary, builtIn, locale, limit = 30) {

@@ -732,35 +732,6 @@ textarea {
   font-weight: 700;
   color: var(--fg);
 }
-/* energy shortcut: the same 1–10 scale as the chart, low on the left */
-.levels {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 4px;
-}
-.level {
-  min-height: 44px;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-}
-.level[aria-pressed="true"] {
-  border-color: var(--fg);
-  box-shadow:
-    0 0 0 2px var(--surface) inset,
-    0 2px 6px rgba(0, 0, 0, 0.25);
-  transform: translateY(-2px);
-}
-.level-ends {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 4px;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
 .chips {
   display: flex;
   flex-wrap: wrap;

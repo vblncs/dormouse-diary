@@ -1,6 +1,6 @@
 // Summaries computed from the diary. Pure functions, used by the views and the tests.
 
-import { ACTIVITY_SEPARATOR } from "./config.js";
+import { ACTIVITY_SEPARATOR, FREQUENT_MAX, FREQUENT_MIN_USES } from "./config.js";
 import { getDay } from "./diary.js";
 
 /** Arithmetic mean, or null for an empty list. */
@@ -61,7 +61,7 @@ export function activityStats(diary, keys, limit = 15) {
  * The activities recorded most often (each part of "A + B" counts separately), most frequent first.
  * Used for the quick-pick buttons in the activity panel.
  */
-export function frequentActivities(diary, limit = 6) {
+export function frequentActivities(diary, limit = FREQUENT_MAX, minUses = FREQUENT_MIN_USES) {
   const counts = new Map();
   for (const day of Object.values(diary.days)) {
     for (const entry of Object.values(day.hours)) {
@@ -76,6 +76,7 @@ export function frequentActivities(diary, limit = 6) {
     }
   }
   return [...counts.values()]
+    .filter((item) => item.count >= minUses)
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
     .slice(0, limit)
     .map((item) => item.name);
