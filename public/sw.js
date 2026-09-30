@@ -4,7 +4,7 @@
 // When releasing, bump VERSION (it must match "version" in package.json — checked by the tests).
 // Every file under public/ must be listed in PRECACHE (also checked by the tests).
 
-const VERSION = "1.4.0";
+const VERSION = "1.4.1";
 const CACHE = `dormouse-diary-${VERSION}`;
 /** Caches this app created, under its current and its former name ("Energy Profile Diary", before 1.4.0). */
 const OWN_CACHE_PREFIXES = ["dormouse-diary-", "energy-profile-diary-"];
@@ -26,8 +26,13 @@ const PRECACHE = [
   "fonts/OFL-AtkinsonHyperlegible.txt",
   "fonts/OFL-BricolageGrotesque.txt",
   "icons/icon.svg",
+  "icons/favicon.svg",
+  "icons/favicon-16.png",
+  "icons/favicon-32.png",
   "icons/icon-192.png",
   "icons/icon-512.png",
+  "icons/icon-maskable-512.png",
+  "icons/apple-touch-icon.png",
   "js/main.js",
   "js/privacy.js",
   "js/app.js",

@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.4.1] – 2026-10-01
+
+### Changed
+
+- New app icon: a sleeping dormouse on a hill-shaped energy curve, coloured by height like the app's scale (red low, green high). It comes in all the sizes browsers and phones ask for: an SVG and PNG favicon, the home-screen icon for iPhone, and regular and maskable icons for installing on Android and computers.
+
 ## [1.4.0] – 2026-09-30
 
 The app is now called **Dormouse Diary** (energy diary · diario dell'energia · journal d'énergie · Energietagebuch). Existing diaries, preferences and backup files keep working: the stored data and its storage keys are unchanged.

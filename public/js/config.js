@@ -1,7 +1,7 @@
 // App-wide constants.
 
 /** Shown in Settings → About. Must match "version" in package.json (checked by the tests). */
-export const APP_VERSION = "1.4.0";
+export const APP_VERSION = "1.4.1";
 
 /** Start of exported file names, the same in every language: dormouse-diary-2026-09-30.csv */
 export const FILE_PREFIX = "dormouse-diary";
