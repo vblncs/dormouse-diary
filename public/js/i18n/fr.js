@@ -1,7 +1,8 @@
 // French strings. Every language file must define exactly the same keys (see tests/i18n.test.js).
 export default {
-  title: "Profil énergétique",
-  docTitle: "Profil énergétique quotidien",
+  title: "Dormouse Diary",
+  tagline: "journal d'énergie",
+  docTitle: "Dormouse Diary – journal d'énergie",
   sub: "Comment ton énergie évolue au fil de la journée, et ce que tu fais à chaque moment.",
   aboutApp: "À propos de ce journal",
   language: "Langue",
@@ -47,7 +48,7 @@ export default {
   undone: "Modification annulée",
   frequent: "Fréquentes",
   shareHint:
-    "Exporte les données en CSV pour les partager avec la personne qui te suit. Sauvegarde, restauration et horaires sont dans les réglages.",
+    "Exporte les fiches en PDF, ou les données en CSV, pour les partager avec la personne qui te suit. Sauvegarde, restauration et horaires sont dans les réglages.",
   prevHour: "Heure précédente",
   nextHour: "Heure suivante",
   displayTitle: "Affichage",
@@ -63,6 +64,33 @@ export default {
   later: "Plus tard",
   restoreQ: "La sauvegarde remplacera toutes les données actuelles du journal. Continuer ?",
   restoreYes: "Oui, restaurer",
+  importQ: "Ton journal contient déjà des données. Que faire de cette sauvegarde ?",
+  importMerge: "Ajouter à mon journal (recommandé)",
+  importMergeHint: "Ajoute les jours et les heures qui manquent. Rien de ce que tu as déjà saisi n'est modifié.",
+  importReplace: "Tout remplacer",
+  mergedNothing: "Rien à ajouter : tout ce que contient la sauvegarde est déjà dans ton journal.",
+  aboutTitle: "À propos et confidentialité",
+  aboutText:
+    "Dormouse Diary t'aide à noter ton énergie et tes activités heure par heure. La méthode suit le profil énergétique de H. Lorenzen (2010). Ce n'est pas un dispositif médical.",
+  privacyLink: "Déclaration de confidentialité",
+  persistYes: "Ce navigateur s'est engagé à conserver le journal, même quand l'appareil manque d'espace.",
+  persistNo:
+    "Ce navigateur ne garantit pas de conserver le journal : il peut l'effacer si l'espace manque, et Safari peut l'effacer après environ une semaine sans visite.",
+  installTip: "Ajouter l'app à l'écran d'accueil la protège mieux :",
+  installIphone: "iPhone : dans Safari, touche Partager, puis « Sur l'écran d'accueil ».",
+  installIphoneNote:
+    "Sur iPhone, l'app installée démarre avec son propre stockage, vide : enregistre d'abord une sauvegarde ici, puis restaure-la là-bas.",
+  installAndroid:
+    "Android : dans Chrome, ouvre le menu ⋮, puis « Installer l'application » ou « Ajouter à l'écran d'accueil ».",
+  versionLabel: (v) => `Version ${v}`,
+  merged: ({ daysAdded, daysCompleted, hoursKept }) =>
+    [
+      daysAdded && (daysAdded === 1 ? "1 jour ajouté" : `${daysAdded} jours ajoutés`),
+      daysCompleted && (daysCompleted === 1 ? "1 jour complété" : `${daysCompleted} jours complétés`),
+      hoursKept && (hoursKept === 1 ? "1 heure laissée telle quelle" : `${hoursKept} heures laissées telles quelles`),
+    ]
+      .filter(Boolean)
+      .join(", "),
   pickDate: "Choisir un jour",
   pickHint: "s'ajoute au texte",
   doing: "Que fais-tu ?",
@@ -90,6 +118,14 @@ export default {
   dataSub:
     "Le journal est enregistré uniquement sur cet appareil. Exporte une sauvegarde de temps en temps et partage le CSV avec la personne qui te suit.",
   expCsv: "Exporter en CSV",
+  expPdf: "Exporter en PDF",
+  pdfDays: "Jours dans le PDF",
+  pdfThisDay: "Le jour affiché",
+  pdfCreate: "Créer le PDF",
+  pdfHint:
+    "Ouvre la fenêtre d'impression : choisis « Enregistrer au format PDF » comme imprimante. Les jours sans données sont ignorés.",
+  pdfNothing: "Aucune donnée ces jours-là : rien à exporter.",
+  pdfUnavailable: "L'impression n'est pas disponible ici.",
   saveBackup: "Sauvegarder",
   restore: "Restaurer une sauvegarde",
   dayStart: "Début de journée",
@@ -110,7 +146,6 @@ export default {
   storageFail: "Échec de l'enregistrement sur l'appareil : exporte une sauvegarde.",
   csvHead: ["date", "heure", "énergie (1-10)", "activité"],
   csvNote: "note",
-  filePrefix: "profil-energetique",
   demoPlan: [
     "Douche / bain + S'habiller",
     "Petit-déjeuner",

@@ -5,6 +5,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
+import { APP_VERSION } from "../public/js/config.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const publicDir = join(root, "public");
@@ -38,5 +39,10 @@ describe("service worker", () => {
   it("uses the version from package.json", async () => {
     const { version } = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
     assert.equal(sw.match(/const VERSION = "([^"]+)"/)[1], version, "bump VERSION in public/sw.js");
+    assert.equal(APP_VERSION, version, "bump APP_VERSION in public/js/config.js");
+  });
+
+  it("still deletes the caches of the app's former name", () => {
+    assert.match(sw, /"energy-profile-diary-"/);
   });
 });

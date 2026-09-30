@@ -1,7 +1,101 @@
 /*
- * Energy Profile Diary styles.
+ * Dormouse Diary styles.
  * Layout: one narrow column — header, day form (chart over activities), trends cards.
  */
+
+/* ---------- fonts ----------
+ * Served from this site (public/fonts/, SIL Open Font License), so no visitor data goes to a font CDN.
+ * Latin and Latin Extended subsets only; other scripts fall back to the system fonts in --font-*.
+ * Bricolage Grotesque is a variable font: one file covers weights 500 to 700.
+ */
+/* latin-ext */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/atkinson-hyperlegible-400-italic-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/atkinson-hyperlegible-400-italic-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/atkinson-hyperlegible-400-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/atkinson-hyperlegible-400-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/atkinson-hyperlegible-700-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/atkinson-hyperlegible-700-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url("../fonts/bricolage-grotesque-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url("../fonts/bricolage-grotesque-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 /* ---------- tokens ---------- */
 :root {
@@ -182,7 +276,14 @@ textarea {
 .titlerow {
   display: flex;
   align-items: center;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 0 8px;
+}
+/* the translated tagline, on its own line under the name */
+.tagline {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 /* round "i" next to the title: shows or hides the description */
 .infobtn {
@@ -291,6 +392,49 @@ textarea {
 }
 .card h2 {
   margin-bottom: 4px;
+}
+
+/* ---------- privacy page ---------- */
+.privacy h1 {
+  margin-bottom: 4px;
+}
+.privacy .sub {
+  margin-bottom: 14px;
+}
+.langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  justify-content: flex-end;
+  font-size: 0.9rem;
+}
+.privacy a {
+  color: var(--accent);
+}
+.langs a[aria-current] {
+  color: var(--fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+.back {
+  font-weight: 700;
+}
+.prose {
+  line-height: 1.55;
+  max-width: 70ch;
+}
+.prose h2 {
+  margin: 18px 0 6px;
+}
+.prose h2:first-child {
+  margin-top: 0;
+}
+.prose p,
+.prose ul {
+  margin: 0 0 8px;
+}
+.prose li + li {
+  margin-top: 6px;
 }
 .tools {
   display: flex;
@@ -1048,9 +1192,107 @@ html[data-palette="colorblind"] {
 .confirm p {
   margin: 0 0 4px;
 }
+/* adding a backup to the diary is safe: no warning colour, the recommended option first */
+.confirm.choice-box {
+  border-color: var(--accent);
+}
+.choice-box > .btn.primary {
+  margin: 8px 0 4px;
+}
+.persist {
+  margin-top: 14px;
+}
+.persist-ok {
+  color: var(--up);
+}
+.steps {
+  margin: 0 0 8px;
+  padding-left: 1.2rem;
+}
+.steps li + li {
+  margin-top: 4px;
+}
+.setting a {
+  color: var(--accent);
+  font-weight: 700;
+}
 .banner.reminder {
   border-style: solid;
 }
 .banner.reminder .tools {
   margin-top: 0;
+}
+
+/* ---------- printing / "Save as PDF" (js/ui/print-view.js) ---------- */
+#print-root {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+  /* on paper: always the light palette, and exactly these colours */
+  :root,
+  :root[data-theme="dark"],
+  :root:not([data-theme="light"]) {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --fg: #1b2624;
+    --muted: #5d6c69;
+    --line: #c9d2cf;
+    --plot-height: 92mm;
+    color-scheme: light;
+    padding: 0;
+  }
+  body {
+    background: #ffffff;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  body > :not(#print-root) {
+    display: none !important;
+  }
+  #print-root {
+    display: block;
+  }
+  .print-day {
+    break-after: page;
+    break-inside: avoid;
+  }
+  .print-day:last-child {
+    break-after: auto;
+  }
+  .print-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4mm;
+  }
+  .print-head span,
+  .print-foot {
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  .print-day .grid {
+    min-width: 0;
+  }
+  .print-day .axis,
+  .print-day .corner,
+  .print-day .acthead {
+    position: static;
+  }
+  .print-day .actcell {
+    min-height: 30mm;
+  }
+  .print-note {
+    margin: 4mm 0 0;
+    font-size: 0.9rem;
+    white-space: pre-line;
+  }
+  .print-foot {
+    margin-top: 3mm;
+    text-align: right;
+  }
 }

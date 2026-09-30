@@ -156,6 +156,62 @@ export function appendActivity(text, activity) {
   return current ? `${current}${ACTIVITY_SEPARATOR}${activity}` : activity;
 }
 
+const sameEntry = (a, b) => a.e === b.e && (a.n ?? "") === (b.n ?? "");
+
+/** The note already holds `addition`: equal, or appended to it earlier (so merging twice adds nothing). */
+function noteContains(note, addition) {
+  return (
+    note === addition ||
+    note.startsWith(`${addition}\n`) ||
+    note.endsWith(`\n${addition}`) ||
+    note.includes(`\n${addition}\n`)
+  );
+}
+
+/**
+ * Adds a backup to the current diary without changing anything already entered.
+ * - Days only in the backup are added.
+ * - Days in both: hours only in the backup are added; an hour filled in both keeps the current value.
+ *   A note is taken from the backup if the current day has none; if both differ, the backup's note is
+ *   appended on a new line (unless it is already there).
+ * - The current diary's day hours are kept.
+ * Neither input is changed.
+ * @returns {{ diary: object, stats: { daysAdded: number, daysCompleted: number, hoursKept: number } }}
+ *   daysCompleted: days in both that received hours or a note; hoursKept: hours that differed and were kept
+ */
+export function mergeDiaries(current, backup) {
+  const diary = structuredClone(current);
+  const stats = { daysAdded: 0, daysCompleted: 0, hoursKept: 0 };
+  for (const [key, incoming] of Object.entries(backup.days)) {
+    const day = diary.days[key];
+    if (!day) {
+      diary.days[key] = structuredClone(incoming);
+      stats.daysAdded++;
+      continue;
+    }
+    let completed = false;
+    for (const [hour, entry] of Object.entries(incoming.hours)) {
+      if (!day.hours[hour]) {
+        day.hours[hour] = { ...entry };
+        completed = true;
+      } else if (!sameEntry(day.hours[hour], entry)) {
+        stats.hoursKept++;
+      }
+    }
+    const note = incoming.note.trim();
+    const own = day.note.trim();
+    if (note && !own) {
+      day.note = incoming.note;
+      completed = true;
+    } else if (note && !noteContains(own, note)) {
+      day.note = `${own}\n${note}`;
+      completed = true;
+    }
+    if (completed) stats.daysCompleted++;
+  }
+  return { diary, stats };
+}
+
 /**
  * A week of plausible sample data ending the day before `today`, in the given language.
  * Deterministic, so screenshots and tests are stable.

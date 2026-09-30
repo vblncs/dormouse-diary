@@ -38,6 +38,17 @@ export function detectLanguage(preferred = []) {
   return FALLBACK_LANGUAGE;
 }
 
+/**
+ * Language for a page: the one asked for (e.g. ?lang=fr), else the one saved in the app,
+ * else the device's (falling back to English).
+ * @param {{ requested?: string|null, saved?: string|null, preferred?: readonly string[] }} sources
+ */
+export function pickLanguage({ requested, saved, preferred = [] }) {
+  if (isSupportedLanguage(requested)) return requested;
+  if (isSupportedLanguage(saved)) return saved;
+  return detectLanguage(preferred);
+}
+
 /** @param {string} code */
 export function getTranslation(code) {
   return TRANSLATIONS[isSupportedLanguage(code) ? code : FALLBACK_LANGUAGE];

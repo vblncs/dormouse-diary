@@ -99,6 +99,33 @@ export function savePrefs(storage, prefs) {
 }
 
 /**
+ * What to tell the person about how safely the diary is kept. Pure.
+ * @param {{ persisted: boolean|null, standalone: boolean }} state
+ *   persisted: null when the browser cannot tell (no Storage API)
+ * @returns {"unknown"|"granted"|"install"|"notGranted"}
+ *   "install": not granted and not installed, so suggest adding the app to the home screen
+ */
+export function persistenceAdvice({ persisted, standalone }) {
+  if (persisted == null) return "unknown";
+  if (persisted) return "granted";
+  return standalone ? "notGranted" : "install";
+}
+
+/** Whether the browser has agreed to keep this site's storage; null when it cannot tell. */
+export async function storagePersisted() {
+  try {
+    return navigator.storage?.persisted ? await navigator.storage.persisted() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Whether the app runs installed (home screen / app window) rather than in a browser tab. */
+export function isStandalone() {
+  return Boolean(globalThis.matchMedia?.("(display-mode: standalone)").matches || globalThis.navigator?.standalone);
+}
+
+/**
  * Asks the browser not to delete the diary when space runs low (and, in Safari, after 7 days
  * without a visit). Best effort: some browsers decide on their own or ignore the request.
  */

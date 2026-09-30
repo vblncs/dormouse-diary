@@ -1,9 +1,13 @@
-// Settings panel (gear button in the header): language, display, diary hours and data management.
+// Settings panel (gear button in the header): language, display, diary hours, data management, about.
 
+import { APP_VERSION } from "../config.js";
+import { RANGE_OPTIONS } from "../config.js";
 import { slotHours } from "../diary.js";
-import { hourLabel } from "../dates.js";
+import { dayRange, hourLabel } from "../dates.js";
 import { LANGUAGE_NAMES, LANGUAGES } from "../i18n/index.js";
+import { isStandalone, persistenceAdvice, storagePersisted } from "../storage.js";
 import { escapeHtml, hideToast, qs, qsa } from "./dom.js";
+import { printDays } from "./print-view.js";
 
 /** A group of radio buttons rendered as large, easy-to-tap options. */
 function choiceGroup(name, options, current) {
@@ -13,6 +17,28 @@ function choiceGroup(name, options, current) {
         `<label class="choice"><input type="radio" name="${name}" value="${value}" ${value === current ? "checked" : ""}><span>${escapeHtml(label)}</span></label>`,
     )
     .join("")}</div>`;
+}
+
+/**
+ * Says in plain words whether the browser promised to keep the diary, and how to protect it if not.
+ * Shows nothing where the browser cannot tell (as before this existed).
+ */
+async function showPersistence(zone, t) {
+  const advice = persistenceAdvice({ persisted: await storagePersisted(), standalone: isStandalone() });
+  if (!zone.isConnected || advice === "unknown") return; // the panel may have been redrawn or closed meanwhile
+  if (advice === "granted") {
+    zone.innerHTML = `<p class="hint persist-ok">✓ ${escapeHtml(t.persistYes)}</p>`;
+    return;
+  }
+  const install =
+    advice === "install"
+      ? `<p class="hint">${escapeHtml(t.installTip)}</p>
+        <ul class="hint steps">
+          <li>${escapeHtml(t.installIphone)} ${escapeHtml(t.installIphoneNote)}</li>
+          <li>${escapeHtml(t.installAndroid)}</li>
+        </ul>`
+      : "";
+  zone.innerHTML = `<p class="hint">${escapeHtml(t.persistNo)}</p>${install}`;
 }
 
 export function openSettings(app) {
@@ -28,6 +54,8 @@ export function openSettings(app) {
     opener?.focus?.();
   }
   document.addEventListener("keydown", onKey);
+  /** Days for the PDF export: "day" (the one shown) or a number of days up to today. */
+  let pdfRange = "day";
 
   function draw(focusSelector) {
     const { t } = app;
@@ -96,12 +124,27 @@ export function openSettings(app) {
           <p class="hint"><b>${escapeHtml(lastBackup)}</b></p>
           <div class="tools">
             <button class="btn primary" id="export-backup">${escapeHtml(t.saveBackup)}</button>
+            <button class="btn" id="export-pdf" aria-expanded="false" aria-controls="pdf-zone">${escapeHtml(t.expPdf)}</button>
             <button class="btn" id="export-csv">${escapeHtml(t.expCsv)}</button>
             <label class="btn" for="import-backup">${escapeHtml(t.restore)}</label>
             <input type="file" id="import-backup" accept=".json,application/json" hidden>
           </div>
+          <div id="pdf-zone" class="confirm choice-box" hidden>
+            <p class="hint">${escapeHtml(t.pdfDays)}</p>
+            ${choiceGroup("pdfRange", [["day", t.pdfThisDay], ...RANGE_OPTIONS.map((n) => [String(n), t.nDays(n)])], pdfRange)}
+            <button class="btn primary" id="pdf-create">${escapeHtml(t.pdfCreate)}</button>
+            <p class="hint">${escapeHtml(t.pdfHint)}</p>
+          </div>
           <div id="restore-zone"></div>
           <div id="wipe-zone" class="wipe"><button class="btn small danger" id="wipe">${escapeHtml(t.wipe)}</button></div>
+          <div id="persist-zone" class="persist"></div>
+        </section>
+
+        <section class="setting">
+          <h4>${escapeHtml(t.aboutTitle)}</h4>
+          <p><b>${escapeHtml(t.title)}</b> – ${escapeHtml(t.tagline)} · ${escapeHtml(t.versionLabel(APP_VERSION))}</p>
+          <p class="hint">${escapeHtml(t.aboutText)}</p>
+          <p><a href="privacy.html?lang=${app.lang}">${escapeHtml(t.privacyLink)}</a></p>
         </section>
       </div>
     </div>`;
@@ -135,6 +178,18 @@ export function openSettings(app) {
     });
 
     qs("#export-csv", root).addEventListener("click", () => app.exportCsv());
+    const pdfZone = qs("#pdf-zone", root);
+    qs("#export-pdf", root).addEventListener("click", (event) => {
+      pdfZone.hidden = !pdfZone.hidden;
+      event.currentTarget.setAttribute("aria-expanded", String(!pdfZone.hidden));
+    });
+    qsa('input[name="pdfRange"]', root).forEach((radio) =>
+      radio.addEventListener("change", () => (pdfRange = radio.value)),
+    );
+    qs("#pdf-create", root).addEventListener("click", () => {
+      const keys = pdfRange === "day" ? [app.dayKey] : dayRange(app.rangeEndKey(), Number(pdfRange));
+      printDays(app, keys);
+    });
     qs("#export-backup", root).addEventListener("click", async () => {
       await app.exportBackup();
       draw("#export-backup"); // show the new "last backup" date
@@ -150,17 +205,31 @@ export function openSettings(app) {
         close();
         return;
       }
-      // restoring replaces everything: ask first
+      // the diary already has entries: add to it (recommended) or replace it
       const zone = qs("#restore-zone", root);
-      zone.innerHTML = `<div class="confirm"><p>${escapeHtml(t.restoreQ)}</p>
+      zone.innerHTML = `<div class="confirm choice-box"><p>${escapeHtml(t.importQ)}</p>
+        <button class="btn primary" id="import-merge">${escapeHtml(t.importMerge)}</button>
+        <p class="hint">${escapeHtml(t.importMergeHint)}</p>
         <div class="tools"><button class="btn" id="restore-cancel">${escapeHtml(t.cancel)}</button>
-        <button class="btn danger-solid" id="restore-confirm">${escapeHtml(t.restoreYes)}</button></div></div>`;
+        <button class="btn danger" id="import-replace">${escapeHtml(t.importReplace)}</button></div></div>`;
       qs("#restore-cancel", zone).addEventListener("click", () => (zone.innerHTML = ""));
-      qs("#restore-confirm", zone).addEventListener("click", () => {
-        app.applyBackup(backup);
+      qs("#import-merge", zone).addEventListener("click", () => {
+        app.mergeBackup(backup);
         close();
       });
-      qs("#restore-cancel", zone).focus();
+      qs("#import-replace", zone).addEventListener("click", () => {
+        // replacing loses everything in the diary now: ask first
+        zone.innerHTML = `<div class="confirm"><p>${escapeHtml(t.restoreQ)}</p>
+          <div class="tools"><button class="btn" id="restore-cancel">${escapeHtml(t.cancel)}</button>
+          <button class="btn danger-solid" id="restore-confirm">${escapeHtml(t.restoreYes)}</button></div></div>`;
+        qs("#restore-cancel", zone).addEventListener("click", () => (zone.innerHTML = ""));
+        qs("#restore-confirm", zone).addEventListener("click", () => {
+          app.applyBackup(backup);
+          close();
+        });
+        qs("#restore-cancel", zone).focus();
+      });
+      qs("#import-merge", zone).focus();
     });
     qs("#wipe", root).addEventListener("click", () => {
       const zone = qs("#wipe-zone", root);
@@ -175,6 +244,7 @@ export function openSettings(app) {
       qs("#wipe-cancel", zone).focus();
     });
 
+    showPersistence(qs("#persist-zone", root), t);
     qs(focusSelector ?? "#settings-done", root)?.focus();
   }
 

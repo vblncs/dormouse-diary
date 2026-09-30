@@ -7,6 +7,7 @@ import {
   createSampleDiary,
   currentSlot,
   getEntry,
+  mergeDiaries,
   normalizeDiary,
   setActivity,
   setDayWindow,
@@ -101,6 +102,63 @@ describe("editing", () => {
   it("appends activities with a separator", () => {
     assert.equal(appendActivity("", "Lunch"), "Lunch");
     assert.equal(appendActivity("Lunch ", "Reading"), "Lunch + Reading");
+  });
+});
+
+describe("mergeDiaries", () => {
+  const diaryWith = (days) => normalizeDiary({ settings: { start: 8, end: 24 }, days });
+
+  it("adds days that are only in the backup", () => {
+    const current = diaryWith({ "2026-09-29": { hours: { 8: { e: 5 } } } });
+    const backup = diaryWith({ "2026-09-28": { note: "Tired", hours: { 9: { e: 3, n: "Nap" } } } });
+    const { diary, stats } = mergeDiaries(current, backup);
+    assert.deepEqual(diary.days["2026-09-28"], { note: "Tired", hours: { 9: { e: 3, n: "Nap" } } });
+    assert.deepEqual(diary.days["2026-09-29"], current.days["2026-09-29"]);
+    assert.deepEqual(stats, { daysAdded: 1, daysCompleted: 0, hoursKept: 0 });
+  });
+
+  it("completes partial days with the missing hours", () => {
+    const current = diaryWith({ [DAY]: { hours: { 8: { e: 5 } } } });
+    const backup = diaryWith({ [DAY]: { hours: { 8: { e: 5 }, 9: { e: 6, n: "Walk" } } } });
+    const { diary, stats } = mergeDiaries(current, backup);
+    assert.deepEqual(diary.days[DAY].hours, { 8: { e: 5 }, 9: { e: 6, n: "Walk" } });
+    assert.deepEqual(stats, { daysAdded: 0, daysCompleted: 1, hoursKept: 0 });
+  });
+
+  it("keeps the current value when an hour is filled in both", () => {
+    const current = diaryWith({ [DAY]: { hours: { 8: { e: 5, n: "Work" } } } });
+    const backup = diaryWith({ [DAY]: { hours: { 8: { e: 2, n: "Sleeping" } } } });
+    const { diary, stats } = mergeDiaries(current, backup);
+    assert.deepEqual(diary.days[DAY].hours[8], { e: 5, n: "Work" });
+    assert.deepEqual(stats, { daysAdded: 0, daysCompleted: 0, hoursKept: 1 });
+  });
+
+  it("takes the backup's note when the current day has none, and ignores identical notes", () => {
+    const current = diaryWith({ [DAY]: { hours: { 8: { e: 5 } } }, "2026-09-29": { note: "Slept badly" } });
+    const backup = diaryWith({ [DAY]: { note: "Headache" }, "2026-09-29": { note: "Slept badly" } });
+    const { diary, stats } = mergeDiaries(current, backup);
+    assert.equal(diary.days[DAY].note, "Headache");
+    assert.equal(diary.days["2026-09-29"].note, "Slept badly");
+    assert.deepEqual(stats, { daysAdded: 0, daysCompleted: 1, hoursKept: 0 });
+  });
+
+  it("appends a different note on a new line, only once", () => {
+    const current = diaryWith({ [DAY]: { note: "Slept badly" } });
+    const backup = diaryWith({ [DAY]: { note: "Physio in the afternoon" } });
+    const once = mergeDiaries(current, backup);
+    assert.equal(once.diary.days[DAY].note, "Slept badly\nPhysio in the afternoon");
+    const twice = mergeDiaries(once.diary, backup);
+    assert.equal(twice.diary.days[DAY].note, "Slept badly\nPhysio in the afternoon");
+    assert.deepEqual(twice.stats, { daysAdded: 0, daysCompleted: 0, hoursKept: 0 });
+  });
+
+  it("keeps the current day hours and leaves both inputs unchanged", () => {
+    const current = normalizeDiary({ settings: { start: 7, end: 22 }, days: { [DAY]: { hours: { 8: { e: 5 } } } } });
+    const backup = normalizeDiary({ settings: { start: 9, end: 25 }, days: { [DAY]: { hours: { 9: { e: 4 } } } } });
+    const before = structuredClone([current, backup]);
+    const { diary } = mergeDiaries(current, backup);
+    assert.deepEqual(diary.settings, { start: 7, end: 22 });
+    assert.deepEqual([current, backup], before);
   });
 });
 

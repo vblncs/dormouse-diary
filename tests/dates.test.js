@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { addDays, dayRange, formatDecimal, fromDateKey, hourLabel, slotLabel, toDateKey } from "../public/js/dates.js";
+import {
+  addDays,
+  dayRange,
+  formatDecimal,
+  formatFullDate,
+  fromDateKey,
+  hourLabel,
+  slotLabel,
+  toDateKey,
+} from "../public/js/dates.js";
 
 describe("date keys", () => {
   it("round-trips a date", () => {
@@ -30,5 +39,13 @@ describe("labels", () => {
     assert.equal(formatDecimal(5.25, "en"), "5.3");
     assert.equal(formatDecimal(5.25, "it"), "5,3");
     assert.equal(formatDecimal(null, "it"), "–");
+  });
+});
+
+describe("formatFullDate", () => {
+  it("includes the weekday, day, month and year in the given language", () => {
+    const text = formatFullDate("2026-09-30", "en");
+    for (const part of ["Wednesday", "30", "September", "2026"]) assert.ok(text.includes(part), text);
+    assert.ok(formatFullDate("2026-09-30", "de").includes("Mittwoch"));
   });
 });

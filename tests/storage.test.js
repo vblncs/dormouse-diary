@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { DIARY_STORAGE_KEY } from "../public/js/config.js";
+import { DIARY_STORAGE_KEY, LANGUAGE_STORAGE_KEY, PREFS_STORAGE_KEY } from "../public/js/config.js";
 import { createEmptyDiary, setEnergy } from "../public/js/diary.js";
 import {
   DEFAULT_PREFS,
@@ -8,6 +8,7 @@ import {
   loadDiary,
   loadLanguage,
   loadPrefs,
+  persistenceAdvice,
   saveDiary,
   saveLanguage,
   savePrefs,
@@ -60,6 +61,54 @@ describe("storage", () => {
     assert.equal(loadLanguage(storage), "fr");
     saveLanguage(storage, "xx");
     assert.equal(loadLanguage(storage), null);
+  });
+});
+
+describe("storage keys", () => {
+  // Renaming these would make every existing diary, language choice and preference disappear.
+  it("are still the ones from the first version", () => {
+    assert.equal(DIARY_STORAGE_KEY, "profiloEnergetico.v1");
+    assert.equal(LANGUAGE_STORAGE_KEY, "profiloEnergetico.lang");
+    assert.equal(PREFS_STORAGE_KEY, "profiloEnergetico.prefs");
+  });
+
+  it("load a diary, language and preferences saved by version 1.2.0", () => {
+    const storage = memoryStorage();
+    // exactly as 1.2.0 wrote them
+    storage.setItem(
+      "profiloEnergetico.v1",
+      '{"v":2,"settings":{"start":8,"end":24},"days":{"2026-09-29":{"note":"Slept badly","hours":{"8":{"e":6,"n":"Breakfast + Cat"},"24":{"e":2}}}}}',
+    );
+    storage.setItem("profiloEnergetico.lang", "de");
+    storage.setItem(
+      "profiloEnergetico.prefs",
+      '{"palette":"colorblind","textSize":"large","lastBackup":"2026-09-20T08:00:00.000Z","reminderSnoozedUntil":null}',
+    );
+    assert.deepEqual(loadDiary(storage), {
+      v: 2,
+      settings: { start: 8, end: 24 },
+      days: { "2026-09-29": { note: "Slept badly", hours: { 8: { e: 6, n: "Breakfast + Cat" }, 24: { e: 2 } } } },
+    });
+    assert.equal(loadLanguage(storage), "de");
+    assert.deepEqual(loadPrefs(storage), {
+      ...DEFAULT_PREFS,
+      palette: "colorblind",
+      textSize: "large",
+      lastBackup: "2026-09-20T08:00:00.000Z",
+    });
+  });
+});
+
+describe("persistenceAdvice", () => {
+  it("says nothing when the browser cannot tell", () => {
+    assert.equal(persistenceAdvice({ persisted: null, standalone: false }), "unknown");
+  });
+  it("reports persistent storage", () => {
+    assert.equal(persistenceAdvice({ persisted: true, standalone: false }), "granted");
+  });
+  it("suggests installing only when not granted and not installed", () => {
+    assert.equal(persistenceAdvice({ persisted: false, standalone: false }), "install");
+    assert.equal(persistenceAdvice({ persisted: false, standalone: true }), "notGranted");
   });
 });
 

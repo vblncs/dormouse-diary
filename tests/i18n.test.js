@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { FALLBACK_LANGUAGE, LANGUAGES, TRANSLATIONS, detectLanguage, getTranslation } from "../public/js/i18n/index.js";
+import {
+  FALLBACK_LANGUAGE,
+  LANGUAGES,
+  TRANSLATIONS,
+  detectLanguage,
+  getTranslation,
+  pickLanguage,
+} from "../public/js/i18n/index.js";
 
 describe("translations", () => {
   const reference = TRANSLATIONS.en;
@@ -54,5 +61,14 @@ describe("detectLanguage", () => {
   });
   it("getTranslation falls back for unknown codes", () => {
     assert.equal(getTranslation("xx"), TRANSLATIONS[FALLBACK_LANGUAGE]);
+  });
+});
+
+describe("pickLanguage", () => {
+  it("prefers the requested language, then the saved one, then the device's", () => {
+    assert.equal(pickLanguage({ requested: "fr", saved: "de", preferred: ["it-IT"] }), "fr");
+    assert.equal(pickLanguage({ requested: "xx", saved: "de", preferred: ["it-IT"] }), "de");
+    assert.equal(pickLanguage({ requested: null, saved: null, preferred: ["it-IT"] }), "it");
+    assert.equal(pickLanguage({ requested: null, saved: null, preferred: ["ja"] }), FALLBACK_LANGUAGE);
   });
 });

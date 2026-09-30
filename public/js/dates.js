@@ -39,6 +39,13 @@ export function formatLongDate(key, lang) {
   return new Intl.DateTimeFormat(lang, { weekday: "long", day: "numeric", month: "long" }).format(fromDateKey(key));
 }
 
+/** "Wednesday 30 September 2026", in the given language (for printed forms). */
+export function formatFullDate(key, lang) {
+  return new Intl.DateTimeFormat(lang, { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(
+    fromDateKey(key),
+  );
+}
+
 export function formatShortDate(key, lang) {
   return new Intl.DateTimeFormat(lang, { weekday: "short", day: "numeric", month: "numeric" }).format(fromDateKey(key));
 }

@@ -1,12 +1,13 @@
 // Application controller: owns the state and is the only place that changes or saves it.
 
-import { CLOCK_CHECK_MS, DEFAULT_RANGE } from "./config.js";
+import { CLOCK_CHECK_MS, DEFAULT_RANGE, FILE_PREFIX } from "./config.js";
 import { diaryToCsv } from "./csv.js";
 import { addDays, formatDecimal, formatLongDate, formatShortDate, toDateKey } from "./dates.js";
 import {
   createEmptyDiary,
   createSampleDiary,
   currentSlot,
+  mergeDiaries,
   normalizeDiary,
   setActivity,
   setDayWindow,
@@ -162,6 +163,7 @@ export class DiaryApp {
     root.dataset.textSize = this.prefs.textSize;
     document.title = t.docTitle;
     qs("#app-title").textContent = t.title;
+    qs("#app-tagline").textContent = t.tagline;
     qs("#app-subtitle").textContent = t.sub;
     qs("#about-toggle").setAttribute("aria-label", t.aboutApp);
     qs("#about-toggle").title = t.aboutApp;
@@ -319,12 +321,12 @@ export class DiaryApp {
   /* ---------- import / export ---------- */
 
   async exportCsv() {
-    await this.offerFile(`${this.t.filePrefix}-${this.todayKey()}.csv`, diaryToCsv(this.diary, this.t));
+    await this.offerFile(`${FILE_PREFIX}-${this.todayKey()}.csv`, diaryToCsv(this.diary, this.t));
   }
 
   async exportBackup() {
     const result = await this.offerFile(
-      `${this.t.filePrefix}-backup-${this.todayKey()}.json`,
+      `${FILE_PREFIX}-backup-${this.todayKey()}.json`,
       JSON.stringify(this.diary, null, 1),
     );
     if (result === "downloaded" || result === "saved") {
@@ -354,6 +356,15 @@ export class DiaryApp {
       this.notify(this.t.badFile);
       return null;
     }
+  }
+
+  /** Adds a backup read by readBackup() to the diary, never changing what is already there. */
+  mergeBackup(backup) {
+    const { diary, stats } = mergeDiaries(this.diary, backup);
+    this.diary = diary;
+    this.save();
+    this.notify(this.t.merged(stats) || this.t.mergedNothing);
+    this.render();
   }
 
   /** Replaces the diary with a backup read by readBackup(). */

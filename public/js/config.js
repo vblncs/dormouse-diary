@@ -1,5 +1,16 @@
 // App-wide constants.
 
+/** Shown in Settings → About. Must match "version" in package.json (checked by the tests). */
+export const APP_VERSION = "1.4.0";
+
+/** Start of exported file names, the same in every language: dormouse-diary-2026-09-30.csv */
+export const FILE_PREFIX = "dormouse-diary";
+
+/**
+ * localStorage keys. They keep the app's first name ("Profilo energetico") on purpose:
+ * renaming them would make existing diaries, languages and preferences disappear.
+ */
+
 /** localStorage key for the diary. Kept from the first version so existing diaries still load. */
 export const DIARY_STORAGE_KEY = "profiloEnergetico.v1";
 

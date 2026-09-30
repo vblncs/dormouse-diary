@@ -1,7 +1,8 @@
 // German strings. Every language file must define exactly the same keys (see tests/i18n.test.js).
 export default {
-  title: "Energieprofil",
-  docTitle: "Tägliches Energieprofil",
+  title: "Dormouse Diary",
+  tagline: "Energietagebuch",
+  docTitle: "Dormouse Diary – Energietagebuch",
   sub: "Wie sich deine Energie im Laufe des Tages verändert und was du jeweils tust.",
   aboutApp: "Über dieses Tagebuch",
   language: "Sprache",
@@ -46,7 +47,7 @@ export default {
   undone: "Änderung rückgängig gemacht",
   frequent: "Häufig",
   shareHint:
-    "Exportiere die Daten als CSV, um sie mit deiner Betreuungsperson zu teilen. Sicherung, Wiederherstellung und Tageszeiten findest du in den Einstellungen.",
+    "Exportiere die Bögen als PDF oder die Daten als CSV, um sie mit deiner Betreuungsperson zu teilen. Sicherung, Wiederherstellung und Tageszeiten findest du in den Einstellungen.",
   prevHour: "Vorherige Stunde",
   nextHour: "Nächste Stunde",
   displayTitle: "Darstellung",
@@ -63,6 +64,33 @@ export default {
   later: "Später",
   restoreQ: "Die Sicherung ersetzt alle aktuellen Daten im Tagebuch. Fortfahren?",
   restoreYes: "Ja, wiederherstellen",
+  importQ: "Dein Tagebuch enthält schon Einträge. Was soll mit dieser Sicherung passieren?",
+  importMerge: "Zu meinem Tagebuch hinzufügen (empfohlen)",
+  importMergeHint: "Fügt fehlende Tage und Stunden hinzu. Nichts, was du schon eingetragen hast, wird verändert.",
+  importReplace: "Alles ersetzen",
+  mergedNothing: "Nichts hinzuzufügen: Alles aus der Sicherung ist schon in deinem Tagebuch.",
+  aboutTitle: "Über die App & Datenschutz",
+  aboutText:
+    "Dormouse Diary hilft dir, deine Energie und Aktivitäten Stunde für Stunde festzuhalten. Die Methode folgt dem Energieprofil nach H. Lorenzen (2010). Die App ist kein Medizinprodukt.",
+  privacyLink: "Datenschutzerklärung",
+  persistYes: "Dieser Browser hat zugesagt, das Tagebuch zu behalten, auch wenn der Speicher knapp wird.",
+  persistNo:
+    "Dieser Browser garantiert nicht, das Tagebuch zu behalten: Er kann es löschen, wenn der Speicher knapp wird, und Safari kann es nach etwa einer Woche ohne Besuch löschen.",
+  installTip: "Auf dem Home-Bildschirm ist die App besser geschützt:",
+  installIphone: "iPhone: Tippe in Safari auf Teilen und dann auf „Zum Home-Bildschirm“.",
+  installIphoneNote:
+    "Auf dem iPhone startet die installierte App mit eigenem, leerem Speicher: Speichere zuerst hier eine Sicherung und stelle sie dort wieder her.",
+  installAndroid:
+    "Android: Öffne in Chrome das Menü ⋮ und tippe auf „App installieren“ oder „Zum Startbildschirm hinzufügen“.",
+  versionLabel: (v) => `Version ${v}`,
+  merged: ({ daysAdded, daysCompleted, hoursKept }) =>
+    [
+      daysAdded && (daysAdded === 1 ? "1 Tag hinzugefügt" : `${daysAdded} Tage hinzugefügt`),
+      daysCompleted && (daysCompleted === 1 ? "1 Tag ergänzt" : `${daysCompleted} Tage ergänzt`),
+      hoursKept && (hoursKept === 1 ? "1 Stunde unverändert gelassen" : `${hoursKept} Stunden unverändert gelassen`),
+    ]
+      .filter(Boolean)
+      .join(", "),
   pickDate: "Tag auswählen",
   pickHint: "wird zum Text hinzugefügt",
   doing: "Was machst du gerade?",
@@ -90,6 +118,13 @@ export default {
   dataSub:
     "Das Tagebuch wird nur auf diesem Gerät gespeichert. Erstelle ab und zu eine Sicherung und teile die CSV-Datei mit deiner Betreuungsperson.",
   expCsv: "Als CSV exportieren",
+  expPdf: "Als PDF exportieren",
+  pdfDays: "Tage im PDF",
+  pdfThisDay: "Der angezeigte Tag",
+  pdfCreate: "PDF erstellen",
+  pdfHint: "Öffnet das Druckfenster: Wähle „Als PDF speichern“ als Drucker. Tage ohne Einträge werden weggelassen.",
+  pdfNothing: "An diesen Tagen gibt es keine Einträge: nichts zu exportieren.",
+  pdfUnavailable: "Drucken ist hier nicht verfügbar.",
   saveBackup: "Sicherung speichern",
   restore: "Sicherung wiederherstellen",
   dayStart: "Tagesbeginn",
@@ -110,7 +145,6 @@ export default {
   storageFail: "Speichern auf dem Gerät fehlgeschlagen: Bitte eine Sicherung exportieren.",
   csvHead: ["Datum", "Uhrzeit", "Energie (1-10)", "Aktivität"],
   csvNote: "Notiz",
-  filePrefix: "energieprofil",
   demoPlan: [
     "Duschen / Baden + Anziehen",
     "Frühstück",

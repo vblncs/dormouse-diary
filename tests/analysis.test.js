@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { activityStats, filledDays, frequentActivities, hourlyAverages, mean, trendOf } from "../public/js/analysis.js";
+import {
+  activityStats,
+  daysWithEntries,
+  filledDays,
+  frequentActivities,
+  hourlyAverages,
+  mean,
+  trendOf,
+} from "../public/js/analysis.js";
 import { diaryToCsv } from "../public/js/csv.js";
 import { createEmptyDiary, setActivity, setEnergy, setNote } from "../public/js/diary.js";
 import { TRANSLATIONS } from "../public/js/i18n/index.js";
@@ -37,6 +45,18 @@ describe("summaries", () => {
 
   it("lists days with at least one energy level", () => {
     assert.deepEqual(filledDays(sampleDiary(), ["2026-09-28", D1, D2]), [D1, D2]);
+  });
+
+  it("lists days with any entry, including only an activity or a note", () => {
+    const diary = createEmptyDiary();
+    setActivity(diary, "2026-09-26", 8, "Walk");
+    setNote(diary, "2026-09-27", "Headache");
+    setEnergy(diary, D1, 8, 5);
+    assert.deepEqual(daysWithEntries(diary, ["2026-09-26", "2026-09-27", "2026-09-28", D1]), [
+      "2026-09-26",
+      "2026-09-27",
+      D1,
+    ]);
   });
 });
 

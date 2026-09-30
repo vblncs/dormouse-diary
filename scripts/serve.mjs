@@ -35,4 +35,4 @@ createServer(async (req, res) => {
     res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("Not found");
   }
-}).listen(PORT, () => console.log(`Energy Profile Diary → http://localhost:${PORT}`));
+}).listen(PORT, () => console.log(`Dormouse Diary → http://localhost:${PORT}`));

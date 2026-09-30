@@ -6,6 +6,7 @@ import { getDay, slotHours } from "../diary.js";
 import { dayRange, hourLabel } from "../dates.js";
 import { LEVELS, levelFor } from "../scale.js";
 import { escapeHtml, qs, qsa } from "./dom.js";
+import { printDays } from "./print-view.js";
 import { openSettings } from "./settings-sheet.js";
 import { bindLegendToggles, horizontalScaleMarkup, legendTogglesMarkup } from "./legend.js";
 
@@ -162,7 +163,8 @@ export function renderTrendsView(app, container) {
       <h2>${escapeHtml(t.dataTitle)}</h2>
       <p class="sub">${escapeHtml(t.shareHint)}</p>
       <div class="tools">
-        <button class="btn primary" id="export-csv">${escapeHtml(t.expCsv)}</button>
+        <button class="btn primary" id="export-pdf">${escapeHtml(t.expPdf)}</button>
+        <button class="btn" id="export-csv">${escapeHtml(t.expCsv)}</button>
         <button class="btn" id="more-settings">${escapeHtml(t.settings)}…</button>
       </div>
     </div>`;
@@ -178,5 +180,7 @@ export function renderTrendsView(app, container) {
   );
   bindLegendToggles(app, "trends", container);
   qs("#export-csv", container).addEventListener("click", () => app.exportCsv());
+  // the days of the period chosen above
+  qs("#export-pdf", container).addEventListener("click", () => printDays(app, keys));
   qs("#more-settings", container).addEventListener("click", () => openSettings(app));
 }

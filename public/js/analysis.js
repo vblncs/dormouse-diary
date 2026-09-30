@@ -13,6 +13,14 @@ export function hourlyAverages(diary, keys, hours) {
   return hours.map((h) => mean(keys.map((k) => getDay(diary, k).hours[h]?.e).filter(Boolean)));
 }
 
+/** Days in `keys` with anything recorded: an energy level, an activity or a note. */
+export function daysWithEntries(diary, keys) {
+  return keys.filter((k) => {
+    const day = getDay(diary, k);
+    return Boolean(day.note) || Object.keys(day.hours).length > 0;
+  });
+}
+
 /** Days in `keys` that have at least one energy level. */
 export function filledDays(diary, keys) {
   return keys.filter((k) => Object.values(getDay(diary, k).hours).some((entry) => entry.e));

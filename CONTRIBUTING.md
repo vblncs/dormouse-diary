@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Energy Profile Diary.
+Thanks for helping improve Dormouse Diary.
 
 ## Setup
 
@@ -24,7 +24,8 @@ npm run check    # lint + formatting + tests (the same checks CI runs)
 - **New files in `public/`** must be added to `PRECACHE` in `public/sw.js`, or offline use breaks. A test checks this.
 - **Never change the stored data format without an upgrade path** in `normalizeDiary`. People's existing diaries must keep loading.
 - **Accessibility:** controls need visible focus, labels, and keyboard access.
-- **Privacy:** no analytics, trackers or network calls with personal data.
+- **Never rename the storage keys** (`profiloEnergetico.*` in `config.js`). They keep the app's first name so existing diaries keep loading.
+- **Privacy:** no analytics, trackers or network requests at runtime. Fonts, images and scripts are served from `public/`; the Content-Security-Policy blocks anything else, and a test checks that `index.html` and `styles.css` refer to no other site.
 
 ## Commit messages
 

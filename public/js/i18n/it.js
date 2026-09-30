@@ -1,7 +1,8 @@
 // Italian strings. Every language file must define exactly the same keys (see tests/i18n.test.js).
 export default {
-  title: "Profilo energetico",
-  docTitle: "Profilo energetico giornaliero",
+  title: "Dormouse Diary",
+  tagline: "diario dell'energia",
+  docTitle: "Dormouse Diary – diario dell'energia",
   sub: "Come cambia la tua energia durante la giornata, e cosa fai in ogni momento.",
   aboutApp: "Informazioni su questo diario",
   language: "Lingua",
@@ -45,7 +46,7 @@ export default {
   undone: "Modifica annullata",
   frequent: "Usate spesso",
   shareHint:
-    "Esporta i dati in CSV per condividerli con chi ti segue. Backup, ripristino e orari sono nelle impostazioni.",
+    "Esporta i moduli in PDF, o i dati in CSV, per condividerli con chi ti segue. Backup, ripristino e orari sono nelle impostazioni.",
   prevHour: "Ora precedente",
   nextHour: "Ora successiva",
   displayTitle: "Aspetto",
@@ -61,6 +62,33 @@ export default {
   later: "Più tardi",
   restoreQ: "Il backup sostituirà tutti i dati attualmente nel diario. Continuare?",
   restoreYes: "Sì, ripristina",
+  importQ: "Il diario contiene già dei dati. Cosa vuoi fare con questo backup?",
+  importMerge: "Aggiungi al mio diario (consigliato)",
+  importMergeHint: "Aggiunge i giorni e le ore che mancano. Niente di ciò che hai già inserito viene modificato.",
+  importReplace: "Sostituisci tutto",
+  mergedNothing: "Niente da aggiungere: tutto ciò che c'è nel backup è già nel diario.",
+  aboutTitle: "Informazioni e privacy",
+  aboutText:
+    "Dormouse Diary ti aiuta a registrare energia e attività ora per ora. Il metodo segue il profilo energetico di H. Lorenzen (2010). Non è un dispositivo medico.",
+  privacyLink: "Informativa sulla privacy",
+  persistYes:
+    "Questo browser si è impegnato a conservare il diario, anche quando lo spazio sul dispositivo scarseggia.",
+  persistNo:
+    "Questo browser non garantisce di conservare il diario: potrebbe cancellarlo se lo spazio scarseggia, e Safari può cancellarlo dopo circa una settimana senza visite.",
+  installTip: "Aggiungere l'app alla schermata Home la protegge meglio:",
+  installIphone: "iPhone: in Safari tocca Condividi, poi «Aggiungi alla schermata Home».",
+  installIphoneNote:
+    "Su iPhone l'app installata parte con uno spazio tutto suo, vuoto: salva prima un backup qui, poi ripristinalo lì.",
+  installAndroid: "Android: in Chrome apri il menu ⋮, poi «Installa app» o «Aggiungi a schermata Home».",
+  versionLabel: (v) => `Versione ${v}`,
+  merged: ({ daysAdded, daysCompleted, hoursKept }) =>
+    [
+      daysAdded && (daysAdded === 1 ? "1 giorno aggiunto" : `${daysAdded} giorni aggiunti`),
+      daysCompleted && (daysCompleted === 1 ? "1 giorno completato" : `${daysCompleted} giorni completati`),
+      hoursKept && (hoursKept === 1 ? "1 ora lasciata com'era" : `${hoursKept} ore lasciate com'erano`),
+    ]
+      .filter(Boolean)
+      .join(", "),
   pickDate: "Scegli un giorno",
   pickHint: "si aggiunge al testo",
   doing: "Cosa stai facendo?",
@@ -88,6 +116,14 @@ export default {
   dataSub:
     "Il diario resta salvato solo su questo dispositivo. Esporta un backup ogni tanto e condividi il CSV con chi ti segue.",
   expCsv: "Esporta CSV",
+  expPdf: "Esporta PDF",
+  pdfDays: "Giorni nel PDF",
+  pdfThisDay: "Il giorno aperto",
+  pdfCreate: "Crea PDF",
+  pdfHint:
+    "Si apre la finestra di stampa: scegli «Salva come PDF» come stampante. I giorni senza dati non vengono inclusi.",
+  pdfNothing: "Nessun dato in questi giorni: niente da esportare.",
+  pdfUnavailable: "La stampa non è disponibile qui.",
   saveBackup: "Salva backup",
   restore: "Ripristina backup",
   dayStart: "Inizio giornata",
@@ -108,7 +144,6 @@ export default {
   storageFail: "Salvataggio sul dispositivo non riuscito: esporta un backup.",
   csvHead: ["data", "ora", "energia (1-10)", "attività"],
   csvNote: "nota",
-  filePrefix: "profilo-energetico",
   demoPlan: [
     "Doccia / bagno + Vestirsi",
     "Colazione",

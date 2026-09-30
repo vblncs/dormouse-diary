@@ -7,9 +7,9 @@ import { openActivitySheet } from "./activity-sheet.js";
 import { debounce, escapeHtml, qs, qsa } from "./dom.js";
 import { axisMarkup, axisWidth, bindLegendToggles, legendTogglesMarkup } from "./legend.js";
 
-/** Grid lines, curve, points and (invisible) keyboard targets of the chart. */
-function plotMarkup(app, hours) {
-  const day = getDay(app.diary, app.dayKey);
+/** Grid lines, curve and points of one day's chart (also used for printing). */
+export function chartMarkup(app, hours, key) {
+  const day = getDay(app.diary, key);
   const count = hours.length;
   const x = (i) => ((i + 0.5) / count) * 100;
   const grid = LEVELS.map((l) => `<div class="gl" style="top:${levelToPercent(l.value)}%"></div>`).join("");
@@ -36,6 +36,13 @@ function plotMarkup(app, hours) {
     )
     .join("")}</svg>`;
 
+  return grid + curve + points;
+}
+
+/** The open day's chart, with the current hour and (invisible) keyboard targets. */
+function plotMarkup(app, hours) {
+  const day = getDay(app.diary, app.dayKey);
+  const count = hours.length;
   const keys = hours
     .map((hour, i) => {
       const label = app.t.colAria(hourLabel(hour), day.hours[hour]?.e);
@@ -47,7 +54,7 @@ function plotMarkup(app, hours) {
   const now =
     nowIndex < 0 ? "" : `<div class="nowcol" style="left:${(nowIndex / count) * 100}%;width:${100 / count}%"></div>`;
 
-  return now + grid + curve + points + keys;
+  return now + chartMarkup(app, hours, app.dayKey) + keys;
 }
 
 function actCellContent(text) {

@@ -1,5 +1,17 @@
 // Offering files to the person (export) and reading files they pick (import).
 
+import { FILE_PREFIX } from "./config.js";
+
+/**
+ * Name suggested for a PDF of these days (sorted date keys):
+ * dormouse-diary-2026-09-30, or dormouse-diary-2026-09-24_2026-09-30 for several days.
+ */
+export function pdfFileName(keys) {
+  const first = keys[0];
+  const last = keys.at(-1);
+  return first === last ? `${FILE_PREFIX}-${first}` : `${FILE_PREFIX}-${first}_${last}`;
+}
+
 /**
  * Saves a text file.
  * - In a normal browser: a regular download.

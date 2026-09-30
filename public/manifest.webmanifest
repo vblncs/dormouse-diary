@@ -1,7 +1,7 @@
 {
-  "name": "Energy Profile Diary",
-  "short_name": "Energy",
-  "description": "Hour-by-hour energy and activity diary for fatigue management.",
+  "name": "Dormouse Diary",
+  "short_name": "Dormouse",
+  "description": "An hour-by-hour energy and activity diary for fatigue management.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

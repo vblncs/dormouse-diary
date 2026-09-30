@@ -1,21 +1,35 @@
-// Energy Profile Diary · SPDX-License-Identifier: AGPL-3.0-or-later
+// Dormouse Diary · SPDX-License-Identifier: AGPL-3.0-or-later
 // Service worker: makes the app work offline.
 //
 // When releasing, bump VERSION (it must match "version" in package.json — checked by the tests).
 // Every file under public/ must be listed in PRECACHE (also checked by the tests).
 
-const VERSION = "1.2.0";
-const CACHE = `energy-profile-diary-${VERSION}`;
+const VERSION = "1.4.0";
+const CACHE = `dormouse-diary-${VERSION}`;
+/** Caches this app created, under its current and its former name ("Energy Profile Diary", before 1.4.0). */
+const OWN_CACHE_PREFIXES = ["dormouse-diary-", "energy-profile-diary-"];
 
 const PRECACHE = [
   "./",
   "index.html",
+  "privacy.html",
   "manifest.webmanifest",
   "css/styles.css",
+  "fonts/atkinson-hyperlegible-400-latin.woff2",
+  "fonts/atkinson-hyperlegible-400-latin-ext.woff2",
+  "fonts/atkinson-hyperlegible-400-italic-latin.woff2",
+  "fonts/atkinson-hyperlegible-400-italic-latin-ext.woff2",
+  "fonts/atkinson-hyperlegible-700-latin.woff2",
+  "fonts/atkinson-hyperlegible-700-latin-ext.woff2",
+  "fonts/bricolage-grotesque-latin.woff2",
+  "fonts/bricolage-grotesque-latin-ext.woff2",
+  "fonts/OFL-AtkinsonHyperlegible.txt",
+  "fonts/OFL-BricolageGrotesque.txt",
   "icons/icon.svg",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "js/main.js",
+  "js/privacy.js",
   "js/app.js",
   "js/config.js",
   "js/dates.js",
@@ -37,6 +51,7 @@ const PRECACHE = [
   "js/ui/activity-sheet.js",
   "js/ui/trends-view.js",
   "js/ui/settings-sheet.js",
+  "js/ui/print-view.js",
 ];
 
 self.addEventListener("install", (event) => {
@@ -45,48 +60,38 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))),
-  );
+  // delete older versions of this app's cache only: other apps may share the origin (e.g. on GitHub Pages)
+  const isOld = (key) => key !== CACHE && OWN_CACHE_PREFIXES.some((prefix) => key.startsWith(prefix));
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter(isOld).map((key) => caches.delete(key)))));
   self.clients.claim();
 });
 
+/** Cache key of a page: its address without the query ("privacy.html?lang=fr"), "./" → index.html. */
+function pageKey(url) {
+  const key = new URL(url);
+  key.search = "";
+  key.hash = "";
+  if (key.pathname.endsWith("/")) key.pathname += "index.html";
+  return key.href;
+}
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
-  if (request.method !== "GET") return;
+  // only this app's own files; the page makes no other requests (see the Content-Security-Policy)
+  if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) return;
 
-  const sameOrigin = new URL(request.url).origin === self.location.origin;
-
-  // The app's own files: always network first, so the page and its scripts are updated together
+  // Always network first, so the page and its scripts are updated together
   // (serving cached scripts with a new page could mix two versions). The cache is the offline fallback.
-  if (sameOrigin) {
-    const cacheKey = request.mode === "navigate" ? "index.html" : request;
-    event.respondWith(
-      fetch(request, { cache: "no-cache" })
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(cacheKey, copy));
-          }
-          return response;
-        })
-        .catch(() => caches.match(cacheKey).then((cached) => cached ?? Response.error())),
-    );
-    return;
-  }
-
-  // Fonts from Google: cache first (they never change), then network.
+  const cacheKey = request.mode === "navigate" ? pageKey(request.url) : request;
   event.respondWith(
-    caches.match(request).then(
-      (cached) =>
-        cached ||
-        fetch(request).then((response) => {
-          if (response.ok || response.type === "opaque") {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        }),
-    ),
+    fetch(request, { cache: "no-cache" })
+      .then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(cacheKey, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(cacheKey).then((cached) => cached ?? Response.error())),
   );
 });
