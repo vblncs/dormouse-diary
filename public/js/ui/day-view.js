@@ -1,12 +1,11 @@
 // "Day" tab: the paper-style form — energy curve on top, activities underneath.
 
-import { daySummary } from "../analysis.js";
 import { getDay, getEntry, slotHours } from "../diary.js";
 import { addDays, fromDateKey, hourLabel, slotLabel } from "../dates.js";
 import { LEVELS, levelFor, levelToPercent, percentToLevel } from "../scale.js";
 import { openActivitySheet } from "./activity-sheet.js";
 import { debounce, escapeHtml, qs, qsa } from "./dom.js";
-import { axisMarkup, axisWidth, bindLegendToggles, legendTogglesMarkup, valueMarkup } from "./legend.js";
+import { axisMarkup, axisWidth, bindLegendToggles, legendTogglesMarkup } from "./legend.js";
 
 /** Grid lines, curve, points and (invisible) keyboard targets of the chart. */
 function plotMarkup(app, hours) {
@@ -51,14 +50,47 @@ function plotMarkup(app, hours) {
   return now + grid + curve + points + keys;
 }
 
+function actCellContent(text) {
+  return text ? escapeHtml(text) : `<span class="plus">+</span>`;
+}
+
+/** What the structure of the view depends on: when it changes, the view must be rebuilt. */
+function layoutKey(app, hours) {
+  return [app.dayKey, hours.join(), app.showBackupReminder(), app.isSample].join("|");
+}
+
+/**
+ * Updates the open view after an edit without rebuilding it, so scroll position, focus
+ * and what a screen reader is reading are kept.
+ * @returns {boolean} false if the view has to be rebuilt instead (other day, other hours…)
+ */
+export function refreshDayView(app, container) {
+  const hours = slotHours(app.diary.settings);
+  const plot = qs("#plot", container);
+  if (!plot || container.dataset.layout !== layoutKey(app, hours)) return false;
+  const { t } = app;
+  const day = getDay(app.diary, app.dayKey);
+
+  plot.innerHTML = plotMarkup(app, hours);
+  qs(".instr", container).hidden = Object.keys(day.hours).length > 0;
+  qsa(".actcell", container).forEach((cell) => {
+    const hour = Number(cell.dataset.hour);
+    const text = day.hours[hour]?.n;
+    cell.innerHTML = actCellContent(text);
+    cell.setAttribute("aria-label", t.actAria(hourLabel(hour), text));
+  });
+  return true;
+}
+
 export function renderDayView(app, container) {
   const { t } = app;
   const hours = slotHours(app.diary.settings);
   const day = getDay(app.diary, app.dayKey);
-  const summary = daySummary(app.diary, app.dayKey, hours);
   const isToday = app.dayKey === app.todayKey();
   const nowHour = app.currentHour();
   const isEmpty = !Object.keys(day.hours).length;
+  // rebuilt on the same day (e.g. after an undo): keep the form scrolled where the person left it
+  const previousScroll = qs(".formscroll", container)?.scrollLeft ?? 0;
 
   const reminder = app.showBackupReminder()
     ? `<div class="banner reminder" role="status">
@@ -83,9 +115,10 @@ export function renderDayView(app, container) {
     </div>
     ${isToday ? "" : `<p class="center"><button class="btn small" id="go-today">${escapeHtml(t.backToday)}</button></p>`}
     <div class="form">
-      ${isEmpty ? `<p class="instr">${escapeHtml(t.instr)}</p>` : ""}
+      ${legendTogglesMarkup(app, "day")}
+      <p class="instr" ${isEmpty ? "" : "hidden"}>${escapeHtml(t.instr)}</p>
       <div class="scroll formscroll">
-        <div class="grid" style="grid-template-columns:${axisWidth(app.legend)} repeat(${hours.length}, minmax(68px, 1fr))">
+        <div class="grid" style="grid-template-columns:${axisWidth(app.legend)} repeat(${hours.length}, minmax(var(--col-min), 1fr))">
           ${axisMarkup(app)}
           <div class="plot" id="plot" style="grid-column:2 / span ${hours.length};--n:${hours.length}">${plotMarkup(app, hours)}</div>
           <div class="corner"></div>
@@ -100,9 +133,7 @@ export function renderDayView(app, container) {
           ${hours
             .map((h) => {
               const text = day.hours[h]?.n;
-              return `<button class="actcell${h === nowHour ? " now" : ""}" data-hour="${h}" aria-label="${escapeHtml(t.actAria(hourLabel(h), text))}">${
-                text ? escapeHtml(text) : `<span class="plus">+</span>`
-              }</button>`;
+              return `<button class="actcell${h === nowHour ? " now" : ""}" data-hour="${h}" aria-label="${escapeHtml(t.actAria(hourLabel(h), text))}">${actCellContent(text)}</button>`;
             })
             .join("")}
         </div>
@@ -112,17 +143,11 @@ export function renderDayView(app, container) {
         <span class="credit">${escapeHtml(t.credit)}</span>
       </div>
     </div>
-    ${legendTogglesMarkup(app, "day")}
-    <div class="stats">
-      <span>${escapeHtml(t.avg)} ${valueMarkup(app, summary.average, true)}</span>
-      <span>${escapeHtml(t.lowest)} ${valueMarkup(app, summary.lowest)}</span>
-      <span>${escapeHtml(t.highest)} ${valueMarkup(app, summary.highest)}</span>
-      <span>${escapeHtml(t.filled)} <b>${summary.filled}/${hours.length}</b></span>
-    </div>
     <div class="daynote">
       <label for="day-note">${escapeHtml(t.dayNote)}</label>
       <textarea id="day-note" placeholder="${escapeHtml(t.dayNotePh)}">${escapeHtml(day.note)}</textarea>
     </div>`;
+  container.dataset.layout = layoutKey(app, hours);
 
   qs("#prev-day", container).addEventListener("click", () => app.showDay(addDays(app.dayKey, -1)));
   qs("#next-day", container).addEventListener("click", () => app.showDay(addDays(app.dayKey, 1)));
@@ -152,6 +177,7 @@ export function renderDayView(app, container) {
   qs("#reminder-later", container)?.addEventListener("click", () => app.snoozeBackupReminder());
   bindLegendToggles(app, "day", container);
   bindPlot(app, qs("#plot", container), hours);
+  qs(".formscroll", container).scrollLeft = previousScroll;
   scrollToNow(app, container);
 }
 
@@ -166,14 +192,24 @@ function scrollToNow(app, container) {
   scroller.scrollLeft = Math.max(0, slot.offsetLeft - axis.offsetWidth - slot.offsetWidth);
 }
 
-/** Tap or drag in the chart to set levels; arrow keys on the focused column. */
+/** Finger travel (px) that turns a touch into a scroll. */
+const TOUCH_SLOP = 10;
+/** Press-and-hold time (ms) before a finger draws on the chart. */
+const HOLD_MS = 300;
+
+/**
+ * Click or drag in the chart to set levels; arrow keys on the focused column.
+ * With a finger the chart must not get in the way of scrolling, so:
+ * a tap sets one point, a swipe (any direction) scrolls and sets nothing,
+ * and press-and-hold, then drag, draws.
+ */
 function bindPlot(app, plot, hours) {
   let dragging = false;
+  let pending = null; // touch/pen gesture whose intent is not known yet: { id, x, y, timer }
   let last = "";
 
   const redrawPlot = () => {
     plot.innerHTML = plotMarkup(app, hours);
-    bindKeys();
   };
 
   const applyPointer = (event) => {
@@ -194,42 +230,88 @@ function bindPlot(app, plot, hours) {
     }
   };
 
+  const clearPending = () => {
+    if (pending) clearTimeout(pending.timer);
+    pending = null;
+  };
+
+  const startDrag = (event, capture = true) => {
+    clearPending();
+    dragging = true;
+    last = "";
+    // keep receiving moves when the finger leaves the chart (levels clamp to 1–10)
+    // and when the redraw removes the element under it
+    if (capture) plot.setPointerCapture?.(event.pointerId);
+    app.beginUndoableChange();
+    applyPointer(event);
+  };
+
   const endDrag = () => {
+    clearPending();
     if (!dragging) return;
     dragging = false;
-    app.render(); // refresh summary and labels once the gesture is over
+    plot.classList.remove("drawing");
+    app.refresh(); // summary and labels, once the gesture is over
     app.offerUndo();
   };
 
   plot.addEventListener("pointerdown", (event) => {
-    if (event.button > 0) return;
-    dragging = true;
-    last = "";
-    app.beginUndoableChange();
-    applyPointer(event);
+    if (event.button > 0 || dragging) return;
+    if (event.pointerType === "mouse") {
+      startDrag(event);
+      return;
+    }
+    clearPending();
+    const { pointerId, clientX, clientY } = event;
+    const timer = setTimeout(() => {
+      // held still: draw from here on (scrolling is blocked by the touchmove handler below)
+      startDrag({ pointerId, clientX, clientY });
+      plot.classList.add("drawing");
+      navigator.vibrate?.(15);
+    }, HOLD_MS);
+    pending = { id: pointerId, x: clientX, y: clientY, timer };
   });
-  plot.addEventListener("pointermove", (event) => dragging && applyPointer(event));
-  ["pointerup", "pointercancel", "pointerleave"].forEach((type) => plot.addEventListener(type, endDrag));
+  plot.addEventListener("pointermove", (event) => {
+    if (dragging) {
+      applyPointer(event);
+    } else if (pending?.id === event.pointerId) {
+      // moved before the hold: a scroll, left to the browser
+      if (Math.hypot(event.clientX - pending.x, event.clientY - pending.y) >= TOUCH_SLOP) clearPending();
+    }
+  });
+  // once drawing, the finger must not scroll the page or the form
+  plot.addEventListener("touchmove", (event) => dragging && event.cancelable && event.preventDefault(), {
+    passive: false,
+  });
+  plot.addEventListener("pointerup", (event) => {
+    if (pending?.id === event.pointerId) {
+      // a tap: set the level where the finger was lifted
+      startDrag(event, false);
+    }
+    endDrag();
+  });
+  // pointercancel: the browser took over to scroll, so a pending touch sets nothing
+  plot.addEventListener("pointercancel", endDrag);
+  // only the chart's own capture: a column key losing its implicit touch capture bubbles here too
+  plot.addEventListener("lostpointercapture", (event) => event.target === plot && endDrag());
 
-  function bindKeys() {
-    qsa(".colkey", plot).forEach((key) =>
-      key.addEventListener("keydown", (event) => {
-        const hour = Number(key.dataset.hour);
-        const current = getEntry(app.diary, app.dayKey, hour)?.e;
-        let level;
-        if (event.key === "ArrowUp") level = Math.min(10, (current ?? 0) + 1);
-        else if (event.key === "ArrowDown") level = Math.max(1, (current ?? 2) - 1);
-        else if (event.key === "Delete" || event.key === "Backspace") level = null;
-        else if (event.key === "Enter") {
-          event.preventDefault();
-          openActivitySheet(app, hour);
-          return;
-        } else return;
-        event.preventDefault();
-        app.setEnergy(hour, level);
-        qs(`#plot .colkey[data-hour="${hour}"]`)?.focus();
-      }),
-    );
-  }
-  bindKeys();
+  plot.addEventListener("keydown", (event) => {
+    const key = event.target.closest(".colkey");
+    if (!key) return;
+    const hour = Number(key.dataset.hour);
+    const current = getEntry(app.diary, app.dayKey, hour)?.e;
+    let level;
+    if (event.key === "ArrowUp") level = Math.min(10, (current ?? 0) + 1);
+    else if (event.key === "ArrowDown") level = Math.max(1, (current ?? 2) - 1);
+    else if (event.key === "Delete" || event.key === "Backspace") level = null;
+    else if (event.key === "Enter") {
+      event.preventDefault();
+      openActivitySheet(app, hour);
+      return;
+    } else return;
+    event.preventDefault();
+    app.setEnergy(hour, level);
+    // the chart was redrawn: put the focus back on the same column
+    qs(`#plot .colkey[data-hour="${hour}"]`)?.focus();
+  });
 }

@@ -1,6 +1,6 @@
 // Application controller: owns the state and is the only place that changes or saves it.
 
-import { DEFAULT_RANGE } from "./config.js";
+import { CLOCK_CHECK_MS, DEFAULT_RANGE } from "./config.js";
 import { diaryToCsv } from "./csv.js";
 import { addDays, formatDecimal, formatLongDate, formatShortDate, toDateKey } from "./dates.js";
 import {
@@ -26,7 +26,7 @@ import {
   saveLanguage,
   savePrefs,
 } from "./storage.js";
-import { renderDayView } from "./ui/day-view.js";
+import { refreshDayView, renderDayView } from "./ui/day-view.js";
 import { qs, showToast } from "./ui/dom.js";
 import { openSettings } from "./ui/settings-sheet.js";
 import { renderTrendsView } from "./ui/trends-view.js";
@@ -58,6 +58,8 @@ export class DiaryApp {
     /** Copy of the diary taken before a chart gesture, so it can be undone. */
     this.undoSnapshot = null;
     this.persistenceRequested = false;
+    /** Today and the current hour as last drawn, to notice when the clock moves on. */
+    this.clock = null;
   }
 
   /* ---------- helpers for views ---------- */
@@ -109,16 +111,51 @@ export class DiaryApp {
     qs("#tab-day").addEventListener("click", () => this.setTab("day"));
     qs("#tab-trends").addEventListener("click", () => this.setTab("trends"));
     qs("#open-settings").addEventListener("click", () => openSettings(this));
+    // the description of the app is shown on request, to leave the screen to the form
+    qs("#about-toggle").addEventListener("click", (event) => {
+      const subtitle = qs("#app-subtitle");
+      subtitle.hidden = !subtitle.hidden;
+      event.currentTarget.setAttribute("aria-expanded", String(!subtitle.hidden));
+    });
     qs("#start-diary").addEventListener("click", () => {
       this.leaveSample();
       this.render();
       this.notify(this.t.ready);
     });
+    // an installed app can stay open for days: follow the clock when it comes back and while it is shown
+    document.addEventListener("visibilitychange", () => document.hidden || this.followClock());
+    window.addEventListener("focus", () => this.followClock());
+    setInterval(() => document.hidden || this.followClock(), CLOCK_CHECK_MS);
+    this.render();
+  }
+
+  /** "today" and "now" as they should be on screen. */
+  clockState() {
+    return { today: this.todayKey(), hour: currentSlot(this.diary.settings, this.now()).hour };
+  }
+
+  /**
+   * Moves to the new day if the day shown was "today", and redraws when the hour changed.
+   * Waits while the person is busy (a panel is open, a field has focus or a chart gesture is under way),
+   * so nothing they are doing is lost.
+   */
+  followClock() {
+    const { today, hour } = this.clockState();
+    if (!this.clock || (this.clock.today === today && this.clock.hour === hour)) return;
+    const active = document.activeElement;
+    const busy =
+      this.undoSnapshot != null ||
+      qs("#sheet-root").childElementCount > 0 ||
+      active?.matches?.("input, textarea, select");
+    if (busy) return;
+    const shownToday = this.isSample ? addDays(this.clock.today, -1) : this.clock.today;
+    if (this.dayKey === shownToday) this.dayKey = this.isSample ? addDays(today, -1) : today;
     this.render();
   }
 
   render() {
     const { t } = this;
+    this.clock = this.clockState();
     const root = document.documentElement;
     root.lang = this.lang;
     root.dataset.palette = this.prefs.palette;
@@ -126,6 +163,8 @@ export class DiaryApp {
     document.title = t.docTitle;
     qs("#app-title").textContent = t.title;
     qs("#app-subtitle").textContent = t.sub;
+    qs("#about-toggle").setAttribute("aria-label", t.aboutApp);
+    qs("#about-toggle").title = t.aboutApp;
     qs("#open-settings").setAttribute("aria-label", t.settings);
     qs("#open-settings").title = t.settings;
     qs("#tab-day").textContent = t.tabDay;
@@ -143,6 +182,11 @@ export class DiaryApp {
     trendsView.hidden = this.tab !== "trends";
     if (this.tab === "day") renderDayView(this, dayView);
     else renderTrendsView(this, trendsView);
+  }
+
+  /** After an edit: updates the open view in place when possible (keeps scroll and focus), else renders. */
+  refresh() {
+    if (this.tab !== "day" || !refreshDayView(this, qs("#view-day"))) this.render();
   }
 
   /* ---------- navigation and view options ---------- */
@@ -208,7 +252,8 @@ export class DiaryApp {
     const leftSample = this.leaveSample();
     change(this.diary, this.dayKey);
     this.save();
-    if (render || leftSample) this.render();
+    if (leftSample) this.render();
+    else if (render) this.refresh();
     return leftSample;
   }
 
@@ -245,7 +290,7 @@ export class DiaryApp {
       onClick: () => {
         this.diary = before;
         this.save();
-        this.render();
+        this.refresh();
         this.notify(this.t.undone);
       },
     });

@@ -1,14 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import {
-  activityStats,
-  daySummary,
-  filledDays,
-  frequentActivities,
-  hourlyAverages,
-  mean,
-  trendOf,
-} from "../public/js/analysis.js";
+import { activityStats, filledDays, frequentActivities, hourlyAverages, mean, trendOf } from "../public/js/analysis.js";
 import { diaryToCsv } from "../public/js/csv.js";
 import { createEmptyDiary, setActivity, setEnergy, setNote } from "../public/js/diary.js";
 import { TRANSLATIONS } from "../public/js/i18n/index.js";
@@ -37,24 +29,6 @@ describe("summaries", () => {
   it("mean of an empty list is null", () => {
     assert.equal(mean([]), null);
     assert.equal(mean([2, 4]), 3);
-  });
-
-  it("summarises one day", () => {
-    assert.deepEqual(daySummary(sampleDiary(), D1, [8, 9, 10, 11]), {
-      average: 16 / 3,
-      lowest: 4,
-      highest: 6,
-      filled: 3,
-    });
-  });
-
-  it("returns nulls for an empty day", () => {
-    assert.deepEqual(daySummary(createEmptyDiary(), D1, [8, 9]), {
-      average: null,
-      lowest: null,
-      highest: null,
-      filled: 0,
-    });
   });
 
   it("averages each hour across days", () => {

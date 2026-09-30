@@ -1,7 +1,7 @@
 // The colour scale as drawn next to the day chart and on the trends tab, plus the legend toggles.
 
 import { escapeHtml, qs } from "./dom.js";
-import { LEVELS, LEVEL_STEP, PLOT_PADDING, levelToPercent, levelFor, bandFor, scaleGradient } from "../scale.js";
+import { LEVELS, LEVEL_STEP, PLOT_PADDING, levelToPercent, scaleGradient } from "../scale.js";
 
 /** Background declaration with an OKLab fallback for older browsers. */
 const gradientStyle = (direction) =>
@@ -49,22 +49,6 @@ export function horizontalScaleMarkup(app) {
         .join("")}</div>`
     : "";
   return `<div class="scale-legend"><div class="fade" style="${gradientStyle("to right")}">${digits}</div>${labels}</div>`;
-}
-
-/** A small colour square for a value (or an empty one). */
-export function swatchMarkup(value) {
-  return value == null
-    ? `<span class="dot"></span>`
-    : `<span class="dot" style="background:${levelFor(value).color}"></span>`;
-}
-
-/** Summary value: number and/or word depending on the legends, always with a swatch. */
-export function valueMarkup(app, value, decimals = false) {
-  if (value == null) return "<b>–</b>";
-  const number = app.legend.numbers ? `<b>${decimals ? app.formatDecimal(value) : value}</b>` : "";
-  const word =
-    app.legend.words && !app.legend.numbers ? ` <b>${escapeHtml(bandFor(value, app.t.bands)?.[2] ?? "")}</b>` : "";
-  return number + swatchMarkup(value) + word;
 }
 
 export function legendTogglesMarkup(app, prefix) {

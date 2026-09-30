@@ -8,23 +8,6 @@ export function mean(values) {
   return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
 }
 
-/** Energy levels recorded on one day, in slot order. */
-export function dayLevels(diary, key, hours) {
-  const day = getDay(diary, key);
-  return hours.map((h) => day.hours[h]?.e).filter(Boolean);
-}
-
-/** { average, lowest, highest, filled } for one day. */
-export function daySummary(diary, key, hours) {
-  const levels = dayLevels(diary, key, hours);
-  return {
-    average: mean(levels),
-    lowest: levels.length ? Math.min(...levels) : null,
-    highest: levels.length ? Math.max(...levels) : null,
-    filled: levels.length,
-  };
-}
-
 /** Average energy per slot across several days (null where nothing was recorded). */
 export function hourlyAverages(diary, keys, hours) {
   return hours.map((h) => mean(keys.map((k) => getDay(diary, k).hours[h]?.e).filter(Boolean)));

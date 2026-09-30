@@ -1,10 +1,12 @@
-// Panel for the activity of one hour. Like the rest of the app it saves automatically:
+// Panel for one hour: its energy level (a shortcut for the chart) and its activity.
+// Like the rest of the app it saves automatically:
 // whatever is typed is kept when the panel is closed or when moving to another hour.
 
 import { frequentActivities } from "../analysis.js";
 import { appendActivity, customActivities, getEntry, slotHours } from "../diary.js";
 import { hourLabel } from "../dates.js";
 import { LANGUAGES, TRANSLATIONS } from "../i18n/index.js";
+import { LEVELS } from "../scale.js";
 import { debounce, escapeHtml, hideToast, qs } from "./dom.js";
 
 /** All built-in activity names in every language (so switching language doesn't make them "custom"). */
@@ -30,6 +32,12 @@ export function openActivitySheet(app, hour) {
           <h3 id="sheet-title">${hourLabel(currentHour)} – ${hourLabel(currentHour + 1)}</h3>
           <button class="iconbtn" id="sheet-next" aria-label="${escapeHtml(t.nextHour)}" ${index >= hours.length - 1 ? "disabled" : ""}>›</button>
         </div>
+        <div class="label"><span class="label-text" id="energy-q">${escapeHtml(t.energyQ)}</span></div>
+        <div class="levels" role="group" aria-labelledby="energy-q">${LEVELS.map(
+          (l) =>
+            `<button type="button" class="level" data-level="${l.value}" aria-pressed="${entry.e === l.value}" aria-label="${escapeHtml(t.levelAria(l.value))}" style="background:${l.color};color:${l.textColor}">${app.legend.numbers ? l.value : ""}</button>`,
+        ).join("")}</div>
+        <div class="level-ends" aria-hidden="true"><span>${escapeHtml(t.bands[0][2])}</span><span>${escapeHtml(t.bands.at(-1)[2])}</span></div>
         <div class="label"><label for="activity-text">${escapeHtml(t.doing)}</label><span>${escapeHtml(t.doingHint)}</span></div>
         <input type="text" id="activity-text" value="${escapeHtml(entry.n ?? "")}" placeholder="${escapeHtml(t.doingPh)}" enterkeyhint="done">
         ${
@@ -54,7 +62,7 @@ export function openActivitySheet(app, hour) {
             .join("")}
         </select>
         <div class="sheet-actions">
-          ${entry.e ? `<button class="btn link" id="sheet-clear-energy">${escapeHtml(t.removePoint)}</button>` : ""}
+          <button class="btn link" id="sheet-clear-energy" ${entry.e ? "" : "hidden"}>${escapeHtml(t.removePoint)}</button>
           <span class="grow"></span>
           <button class="btn primary wide" id="sheet-done">${escapeHtml(t.done)}</button>
         </div>
@@ -84,6 +92,22 @@ export function openActivitySheet(app, hour) {
       close();
     };
 
+    const levelButtons = [...root.querySelectorAll(".level")];
+    const clearEnergy = qs("#sheet-clear-energy", root);
+    levelButtons.forEach((button) =>
+      button.addEventListener("click", () => {
+        const level = Number(button.dataset.level);
+        if (getEntry(app.diary, app.dayKey, currentHour)?.e === level) return;
+        if (app.setEnergy(currentHour, level, { render: false })) {
+          // the sample was replaced by an empty diary: show this hour of the new day, not the sample's text
+          show(currentHour);
+          return;
+        }
+        levelButtons.forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+        clearEnergy.hidden = false;
+      }),
+    );
+
     root.querySelectorAll(".chip").forEach((chip) =>
       chip.addEventListener("click", () => {
         input.value = appendActivity(input.value, chip.dataset.activity);
@@ -105,7 +129,7 @@ export function openActivitySheet(app, hour) {
     qs("#sheet-next", root).addEventListener("click", () => goTo(hours[index + 1]));
     qs("#sheet-done", root).addEventListener("click", done);
     qs("#overlay", root).addEventListener("click", (event) => event.target.id === "overlay" && done());
-    qs("#sheet-clear-energy", root)?.addEventListener("click", () => {
+    clearEnergy.addEventListener("click", () => {
       keep();
       app.beginUndoableChange();
       app.setEnergy(currentHour, null, { render: false });
@@ -123,7 +147,7 @@ export function openActivitySheet(app, hour) {
   function close() {
     root.innerHTML = "";
     document.removeEventListener("keydown", onKey);
-    app.render();
+    app.refresh();
   }
 
   show(hour);

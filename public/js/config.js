@@ -29,3 +29,6 @@ export const PREFS_STORAGE_KEY = "profiloEnergetico.prefs";
 export const BACKUP_REMINDER_DAYS = 14;
 /** "Later" hides the reminder for this long. */
 export const BACKUP_SNOOZE_DAYS = 7;
+
+/** How often an open app checks whether the hour or the day has changed. */
+export const CLOCK_CHECK_MS = 60 * 1000;

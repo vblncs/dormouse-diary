@@ -112,7 +112,7 @@ public/                      Everything that gets deployed
     ├── app.js               DiaryApp controller: state, editing, saving, import/export
     ├── config.js            Constants (storage keys, default hours, …)
     ├── diary.js             Data model: validate/upgrade, edit, sample data   (pure)
-    ├── analysis.js          Averages, day summary, activity statistics        (pure)
+    ├── analysis.js          Averages, activity statistics        (pure)
     ├── csv.js               CSV export                                         (pure)
     ├── dates.js             Date keys, hour labels, locale formatting          (pure)
     ├── scale.js             Energy levels, colors, chart geometry, bands       (pure)
@@ -197,7 +197,7 @@ This app is a self-observation aid. It is not a medical device and does not give
 
 ## License
 
-Copyright (C) 2026 Virginie
+Copyright (C) 2026 vblncs
 
 This program is free software: you can redistribute it and/or modify it under the terms of the **GNU Affero General Public License** as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
