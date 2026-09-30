@@ -1,0 +1,26 @@
+{
+  "name": "energy-profile-diary",
+  "version": "1.0.0",
+  "description": "Hour-by-hour energy and activity diary for fatigue management, after H. Lorenzen's energy profile.",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "author": "Virginie",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint && npm run format:check && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.12.0",
+    "prettier": "^3.9.9"
+  }
+}

@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- Energy Profile Diary · Copyright (C) 2026 Virginie · SPDX-License-Identifier: AGPL-3.0-or-later -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Energy profile</title>
+    <meta name="description" content="Hour-by-hour energy and activity diary for fatigue management." />
+    <meta name="theme-color" content="#1f5a66" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Energy" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="top">
+        <div class="titles">
+          <h1 id="app-title"></h1>
+          <p class="sub" id="app-subtitle"></p>
+        </div>
+        <div class="headctl">
+          <label class="langpick">
+            <span class="sr" id="language-label"></span>
+            <select id="language" aria-labelledby="language-label"></select>
+          </label>
+          <div class="tabs" role="tablist">
+            <button id="tab-day" role="tab" aria-selected="true"></button>
+            <button id="tab-trends" role="tab" aria-selected="false"></button>
+          </div>
+        </div>
+      </header>
+
+      <div id="sample-banner" class="banner" hidden>
+        <p><b id="sample-title"></b> <span id="sample-text"></span></p>
+        <button class="btn primary" id="start-diary"></button>
+      </div>
+
+      <main>
+        <section id="view-day"></section>
+        <section id="view-trends" hidden></section>
+      </main>
+    </div>
+
+    <div id="sheet-root"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <noscript>This app needs JavaScript. / Questa app richiede JavaScript.</noscript>
+  </body>
+</html>
