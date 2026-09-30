@@ -138,7 +138,6 @@ scripts/serve.mjs            Zero-dependency development server
 - **Translations** live in `public/js/i18n/<code>.js`. All languages must have the same keys; `tests/i18n.test.js` fails otherwise. Each file contains:
   - the interface text;
   - the descriptive legend (`bands`);
-  - the activity list (`acts`);
   - the sample data (`demoPlan`).
 - **Adding a language:** copy `en.js`, translate it, then register it in `i18n/index.js` (`TRANSLATIONS` and `LANGUAGE_NAMES`) and in `PRECACHE` in `sw.js`.
 - **Adding a file under `public/`:** also add it to `PRECACHE` in `public/sw.js`. A test checks this.

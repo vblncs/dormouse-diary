@@ -26,6 +26,11 @@ export const FREQUENT_MIN_USES = 2;
 
 /** Separator used when several activities are combined in one hour. */
 export const ACTIVITY_SEPARATOR = " + ";
+/**
+ * What splits an entry into activities when counting them: "+" or a comma,
+ * but not a decimal comma ("Walk 1,5 km" stays one activity).
+ */
+export const ACTIVITY_SPLIT = /\+|,(?!\d)/;
 
 /** localStorage key for display preferences and backup bookkeeping (not part of the diary backup). */
 export const PREFS_STORAGE_KEY = "profiloEnergetico.prefs";

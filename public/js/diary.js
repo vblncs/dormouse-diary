@@ -157,24 +157,6 @@ export function appendActivity(text, activity) {
 }
 
 /**
- * Activities the person typed themselves (not in any built-in list), for the suggestions while typing.
- * @param {Iterable<string>} builtIn
- */
-export function customActivities(diary, builtIn, locale, limit = 30) {
-  const known = new Set([...builtIn].map((a) => a.toLowerCase()));
-  const found = new Map();
-  for (const day of Object.values(diary.days)) {
-    for (const entry of Object.values(day.hours)) {
-      for (const part of (entry.n ?? "").split(ACTIVITY_SEPARATOR)) {
-        const name = part.trim();
-        if (name && !known.has(name.toLowerCase())) found.set(name.toLowerCase(), name);
-      }
-    }
-  }
-  return [...found.values()].sort((a, b) => a.localeCompare(b, locale)).slice(0, limit);
-}
-
-/**
  * A week of plausible sample data ending the day before `today`, in the given language.
  * Deterministic, so screenshots and tests are stable.
  */

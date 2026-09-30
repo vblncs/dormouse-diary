@@ -6,7 +6,6 @@ import {
   createEmptyDiary,
   createSampleDiary,
   currentSlot,
-  customActivities,
   getEntry,
   normalizeDiary,
   setActivity,
@@ -102,16 +101,6 @@ describe("editing", () => {
   it("appends activities with a separator", () => {
     assert.equal(appendActivity("", "Lunch"), "Lunch");
     assert.equal(appendActivity("Lunch ", "Reading"), "Lunch + Reading");
-  });
-});
-
-describe("customActivities", () => {
-  it("lists typed activities that are not built in, once each, sorted", () => {
-    const diary = createEmptyDiary();
-    setActivity(diary, DAY, 8, "Breakfast + Feeding the cat");
-    setActivity(diary, DAY, 9, "feeding the cat");
-    setActivity(diary, DAY, 10, "Choir");
-    assert.deepEqual(customActivities(diary, ["Breakfast"], "en"), ["Choir", "feeding the cat"]);
   });
 });
 

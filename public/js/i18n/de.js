@@ -66,7 +66,7 @@ export default {
   pickDate: "Tag auswählen",
   pickHint: "wird zum Text hinzugefügt",
   doing: "Was machst du gerade?",
-  doingPh: "z. B. Frühstück + Katze versorgen",
+  doingPh: "z. B. Mittagessen kochen",
   removePoint: "Energiewert dieser Stunde löschen",
   heatTitle: "Energiekarte",
   heatSub: (n, r) => `${n} von ${r} Tagen ausgefüllt. Tippe auf ein Datum, um es zu öffnen.`,
@@ -111,18 +111,6 @@ export default {
   csvHead: ["Datum", "Uhrzeit", "Energie (1-10)", "Aktivität"],
   csvNote: "Notiz",
   filePrefix: "energieprofil",
-  acts: [
-    ["Ruhe und Schlaf", ["Schlafen", "Nickerchen", "Liegend ausruhen", "Sitzend ausruhen", "Entspannung / Meditation"]],
-    [
-      "Körperpflege und Essen",
-      ["Duschen / Baden", "Anziehen", "Frühstück", "Mittagessen", "Abendessen", "Zwischenmahlzeit"],
-    ],
-    ["Haushalt", ["Kochen", "Hausarbeit", "Einkaufen", "Haustiere versorgen", "Kinder betreuen"]],
-    ["Arbeit und Kopf", ["Arbeit", "Lernen", "Computer / Handy", "Lesen", "Kreuzworträtsel / Denkspiele"]],
-    ["Bewegung", ["Spaziergang", "Sport / Bewegung", "Physiotherapie / Therapie", "Arzttermin"]],
-    ["Freizeit", ["Fernsehen", "Hobby (Malen, Musik…)", "Brettspiele", "Leute treffen", "Telefonieren"]],
-    ["Sonstiges", ["Unterwegs (Auto, Bus, Zug)"]],
-  ],
   demoPlan: [
     "Duschen / Baden + Anziehen",
     "Frühstück",

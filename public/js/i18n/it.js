@@ -64,7 +64,7 @@ export default {
   pickDate: "Scegli un giorno",
   pickHint: "si aggiunge al testo",
   doing: "Cosa stai facendo?",
-  doingPh: "es. Colazione + occuparmi del gatto",
+  doingPh: "es. Preparare il pranzo",
   removePoint: "Cancella il livello di energia di quest'ora",
   heatTitle: "Mappa dell'energia",
   heatSub: (n, r) => `${n} giorni compilati su ${r}. Tocca una data per aprirla.`,
@@ -109,18 +109,6 @@ export default {
   csvHead: ["data", "ora", "energia (1-10)", "attività"],
   csvNote: "nota",
   filePrefix: "profilo-energetico",
-  acts: [
-    ["Riposo e sonno", ["Dormire", "Pisolino", "Riposare sdraiato", "Riposare seduto", "Rilassamento / meditazione"]],
-    ["Cura di sé", ["Doccia / bagno", "Vestirsi", "Colazione", "Pranzo", "Cena", "Spuntino"]],
-    ["Casa", ["Cucinare", "Faccende di casa", "Fare la spesa", "Occuparsi di animali", "Occuparsi dei figli"]],
-    ["Lavoro e mente", ["Lavoro", "Studio", "Computer / telefono", "Leggere", "Parole crociate / giochi di mente"]],
-    ["Movimento", ["Passeggiata", "Attività fisica / sport", "Fisioterapia / terapia", "Visita medica"]],
-    [
-      "Tempo libero",
-      ["Guardare la TV", "Hobby (disegno, musica…)", "Giochi da tavolo", "Incontrare persone", "Telefonare"],
-    ],
-    ["Altro", ["Spostamenti (auto, bus, treno)"]],
-  ],
   demoPlan: [
     "Doccia / bagno + Vestirsi",
     "Colazione",

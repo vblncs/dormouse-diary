@@ -85,6 +85,13 @@ describe("frequentActivities", () => {
     setActivity(diary, D2, 10, "Cat + Reading");
     assert.deepEqual(frequentActivities(diary, 3, 1), ["Cat", "Breakfast", "Reading"]);
   });
+  it("also splits on commas, but not on decimal commas", () => {
+    const diary = createEmptyDiary();
+    setActivity(diary, D1, 8, "Breakfast, cat");
+    setActivity(diary, D1, 9, "Cat+Walk 1,5 km");
+    setActivity(diary, D2, 8, "Walk 1,5 km , breakfast");
+    assert.deepEqual(frequentActivities(diary), ["Breakfast", "cat", "Walk 1,5 km"]);
+  });
   it("leaves out activities recorded only once", () => {
     const diary = createEmptyDiary();
     setActivity(diary, D1, 8, "Breakfast + Cat");

@@ -2,19 +2,9 @@
 // whatever is typed is kept when the panel is closed or when moving to another hour.
 
 import { frequentActivities } from "../analysis.js";
-import { appendActivity, customActivities, getEntry, slotHours } from "../diary.js";
+import { appendActivity, getEntry, slotHours } from "../diary.js";
 import { hourLabel } from "../dates.js";
-import { LANGUAGES, TRANSLATIONS } from "../i18n/index.js";
 import { debounce, escapeHtml, hideToast, qs } from "./dom.js";
-
-/** All built-in activity names in every language (so switching language doesn't make them "custom"). */
-const BUILT_IN = LANGUAGES.flatMap((code) => TRANSLATIONS[code].acts.flatMap(([, items]) => items));
-
-/** Suggestions while typing: the person's own activities first, then the built-in ones in their language. */
-function suggestions(app) {
-  const own = customActivities(app.diary, BUILT_IN, app.lang);
-  return [...own, ...app.t.acts.flatMap(([, items]) => items)];
-}
 
 export function openActivitySheet(app, hour) {
   const root = qs("#sheet-root");
@@ -36,10 +26,7 @@ export function openActivitySheet(app, hour) {
           <button class="iconbtn" id="sheet-next" aria-label="${escapeHtml(t.nextHour)}" ${index >= hours.length - 1 ? "disabled" : ""}>›</button>
         </div>
         <div class="label"><label for="activity-text">${escapeHtml(t.doing)}</label></div>
-        <input type="text" id="activity-text" value="${escapeHtml(entry.n ?? "")}" placeholder="${escapeHtml(t.doingPh)}" enterkeyhint="done" list="activity-suggestions" autocomplete="off">
-        <datalist id="activity-suggestions">${suggestions(app)
-          .map((a) => `<option value="${escapeHtml(a)}"></option>`)
-          .join("")}</datalist>
+        <input type="text" id="activity-text" value="${escapeHtml(entry.n ?? "")}" placeholder="${escapeHtml(t.doingPh)}" enterkeyhint="done">
         ${
           frequent.length
             ? `<div class="label"><span class="label-text">${escapeHtml(t.frequent)}</span><span>${escapeHtml(t.pickHint)}</span></div>
